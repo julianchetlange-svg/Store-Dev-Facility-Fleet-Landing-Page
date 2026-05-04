@@ -431,7 +431,13 @@
       background: var(--green-soft);
       color: var(--green);
       border: 1px solid rgba(11,93,56,0.15);
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      transition: var(--transition);
     }
+
+    .pill-status:hover { filter: brightness(0.93); }
 
     .pill-status::before {
       content: '';
@@ -440,7 +446,40 @@
       border-radius: 50%;
       background: var(--green-mid);
       display: inline-block;
+      flex-shrink: 0;
     }
+
+    /* Status variants */
+    .pill-status[data-status="Current"]      { background: var(--green-soft); color: var(--green); border-color: rgba(11,93,56,0.15); }
+    .pill-status[data-status="Current"]::before { background: var(--green-mid); }
+
+    .pill-status[data-status="Outdated"]     { background: #fef2f2; color: #9b1c1c; border-color: rgba(185,28,28,0.2); }
+    .pill-status[data-status="Outdated"]::before { background: #dc2626; }
+
+    .pill-status[data-status="Updating"]  { background: #eff6ff; color: #1e40af; border-color: rgba(37,99,235,0.2); }
+    .pill-status[data-status="Updating"]::before { background: #3b82f6; }
+
+    /* Tooltip hint */
+    .pill-status::after {
+      content: 'Click to change status';
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 500;
+      white-space: nowrap;
+      padding: 4px 8px;
+      border-radius: 6px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      z-index: 10;
+    }
+
+    .pill-status:hover::after { opacity: 1; }
 
     .pill-cadence {
       background: var(--gold-light);
@@ -675,7 +714,7 @@
 
           <article class="report-card" data-title="hot issues tracker" style="--accent:#e8400a;">
             <div class="card-pills">
-              <span class="pill pill-status">Current</span>
+              <span class="pill pill-status" data-status="Current">Current</span>
               <span class="pill" style="background:#fff0eb;color:#8a2000;border:1px solid rgba(232,64,10,0.2);font-size:11px;font-weight:700;letter-spacing:.03em;padding:4px 10px;border-radius:999px;">🔥 High Priority</span>
             </div>
             <h3>Hot Issues Tracker</h3>
@@ -703,7 +742,7 @@
 
           <article class="report-card" data-title="forklift utilization report">
             <div class="card-pills">
-              <span class="pill pill-status">Current</span>
+              <span class="pill pill-status" data-status="Current">Current</span>
               <span class="pill pill-cadence">Monthly Update</span>
             </div>
             <h3>Forklift Utilization Report</h3>
@@ -716,7 +755,7 @@
 
           <article class="report-card" data-title="truck utilization">
             <div class="card-pills">
-              <span class="pill pill-status">Current</span>
+              <span class="pill pill-status" data-status="Current">Current</span>
               <span class="pill pill-cadence">Monthly Update</span>
             </div>
             <h3>Truck Utilization</h3>
@@ -744,7 +783,7 @@
 
           <article class="report-card" data-title="fleet work order follow-up">
             <div class="card-pills">
-              <span class="pill pill-status">Current</span>
+              <span class="pill pill-status" data-status="Current">Current</span>
               <span class="pill pill-cadence">Weekly Update</span>
             </div>
             <h3>Fleet Work Order Follow-Up</h3>
@@ -757,7 +796,7 @@
 
           <article class="report-card" data-title="pm compliance dashboard">
             <div class="card-pills">
-              <span class="pill pill-status">Current</span>
+              <span class="pill pill-status" data-status="Current">Current</span>
               <span class="pill pill-cadence">Weekly Follow-Up</span>
             </div>
             <h3>PM Compliance Dashboard</h3>
@@ -770,7 +809,7 @@
 
           <article class="report-card" data-title="fleet spend yoy report">
             <div class="card-pills">
-              <span class="pill pill-status">Current</span>
+              <span class="pill pill-status" data-status="Current">Current</span>
               <span class="pill pill-cadence">Monthly Update</span>
             </div>
             <h3>Fleet Spend YOY Report</h3>
@@ -798,7 +837,7 @@
 
           <article class="report-card" data-title="facilities work order follow-up">
             <div class="card-pills">
-              <span class="pill pill-status">Current</span>
+              <span class="pill pill-status" data-status="Current">Current</span>
               <span class="pill pill-cadence">Weekly Update</span>
             </div>
             <h3>Facilities Work Order Follow-Up</h3>
@@ -811,7 +850,7 @@
 
           <article class="report-card" data-title="facilities spend dashboard">
             <div class="card-pills">
-              <span class="pill pill-status">Current</span>
+              <span class="pill pill-status" data-status="Current">Current</span>
               <span class="pill pill-cadence">Monthly Update</span>
             </div>
             <h3>Facilities Spend Dashboard</h3>
@@ -839,7 +878,7 @@
 
           <article class="report-card" data-title="mtd fuel trends">
             <div class="card-pills">
-              <span class="pill pill-status">Current</span>
+              <span class="pill pill-status" data-status="Current">Current</span>
               <span class="pill pill-cadence">Weekly Update</span>
             </div>
             <h3>MTD Fuel Trends</h3>
@@ -852,7 +891,7 @@
 
           <article class="report-card" data-title="additional spend proposal">
             <div class="card-pills">
-              <span class="pill pill-status">Current</span>
+              <span class="pill pill-status" data-status="Current">Current</span>
               <span class="pill pill-cadence">Strategic Analysis</span>
             </div>
             <h3>Additional Spend Proposal</h3>
@@ -865,7 +904,7 @@
 
           <article class="report-card" data-title="fleet lifecycle budget planning">
             <div class="card-pills">
-              <span class="pill pill-status">Current</span>
+              <span class="pill pill-status" data-status="Current">Current</span>
               <span class="pill pill-cadence">Quarterly Update</span>
             </div>
             <h3>Fleet Lifecycle &amp; Budget Planning</h3>
@@ -893,7 +932,7 @@
 
           <article class="report-card" data-title="project summary progress">
             <div class="card-pills">
-              <span class="pill pill-status">Current</span>
+              <span class="pill pill-status" data-status="Current">Current</span>
               <span class="pill pill-cadence">Weekly Update</span>
             </div>
             <h3>Project Summary &amp; Progress</h3>
@@ -906,7 +945,7 @@
 
           <article class="report-card" data-title="rio truss blade saw proposal">
             <div class="card-pills">
-              <span class="pill pill-status">Current</span>
+              <span class="pill pill-status" data-status="Current">Current</span>
               <span class="pill pill-cadence">Project Proposal</span>
             </div>
             <h3>Rio Truss Blade Saw Proposal</h3>
@@ -919,7 +958,7 @@
 
           <article class="report-card" data-title="canyon lake project schedule">
             <div class="card-pills">
-              <span class="pill pill-status">Current</span>
+              <span class="pill pill-status" data-status="Current">Current</span>
               <span class="pill pill-cadence">Project Progress</span>
             </div>
             <h3>Canyon Lake Project Schedule</h3>
@@ -1006,7 +1045,7 @@
     return `
       <article class="report-card" data-title="${r.title.toLowerCase()}">
         <div class="card-pills">
-          <span class="pill pill-status">Current</span>
+          <span class="pill pill-status" data-status="Current">Current</span>
           <span class="pill pill-cadence">${r.cadence}</span>
         </div>
         <h3>${r.title}</h3>
@@ -1057,6 +1096,43 @@
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('overlay').classList.remove('open');
   }
+
+  // ── Status cycling
+  const STATUSES = ['Current', 'Outdated', 'Updating'];
+
+  // Load saved statuses from sessionStorage
+  const savedStatuses = JSON.parse(sessionStorage.getItem('reportStatuses') || '{}');
+
+  function applyStatuses() {
+    document.querySelectorAll('.pill-status').forEach(pill => {
+      const card = pill.closest('.report-card');
+      const key  = card ? card.dataset.title : null;
+      if (key && savedStatuses[key]) {
+        pill.dataset.status = savedStatuses[key];
+        pill.textContent   = savedStatuses[key];
+      }
+    });
+  }
+
+  document.addEventListener('click', e => {
+    const pill = e.target.closest('.pill-status');
+    if (!pill) return;
+    const card    = pill.closest('.report-card');
+    const key     = card ? card.dataset.title : null;
+    const current = pill.dataset.status || 'Current';
+    const next    = STATUSES[(STATUSES.indexOf(current) + 1) % STATUSES.length];
+    pill.dataset.status = next;
+    pill.textContent    = next;
+    if (key) {
+      savedStatuses[key] = next;
+      sessionStorage.setItem('reportStatuses', JSON.stringify(savedStatuses));
+    }
+  });
+
+  // Apply on load
+  applyStatuses();
+
+  // Re-apply after search results render
 </script>
 </body>
 </html>
