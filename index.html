@@ -3,662 +3,234 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Store Development & Fleet Report Hub — McCoy's</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <title>McCoy's Report Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --green:        #0b5d38;
-      --green-dark:   #073f29;
-      --green-mid:    #1a7a4a;
-      --green-soft:   #e6f2eb;
-      --green-xsoft:  #f2f8f4;
-      --gold:         #e8a800;
-      --gold-light:   #fff4cc;
-      --gold-mid:     #f9d660;
-      --ink:          #0f1f17;
-      --muted:        #5a7060;
-      --border:       #d5e4da;
-      --card:         #ffffff;
-      --bg:           #f4f8f5;
-      --radius-sm:    10px;
-      --radius-md:    16px;
-      --radius-lg:    24px;
-      --radius-xl:    32px;
-      --shadow-sm:    0 2px 8px rgba(7,63,41,0.06);
-      --shadow-md:    0 8px 24px rgba(7,63,41,0.09);
-      --shadow-lg:    0 20px 48px rgba(7,63,41,0.12);
-      --transition:   all 0.2s cubic-bezier(0.4,0,0.2,1);
-    }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      color: var(--ink);
-      background: var(--bg);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
+    :root {
+      --green:   #2d6a2d;
+      --green-dk:#1f4d1f;
+      --gold:    #f5a800;
+      --bg:     #f4f5f7;
+      --card:   #ffffff;
+      --text:   #1a1a2e;
+      --muted:  #6b7280;
+      --border: #e5e7eb;
+      --sidebar-w: 240px;
     }
 
-    /* ─── SIDEBAR LAYOUT ─── */
-    .layout {
-      display: flex;
-      min-height: 100vh;
-    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
 
-    /* ─── SIDEBAR ─── */
+    /* TOPBAR */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--green); color: #fff;
+      display: flex; align-items: center; gap: 16px;
+      padding: 0 24px; height: 60px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.18);
+    }
+    .topbar-logo { font-family: 'DM Serif Display', serif; font-size: 20px; letter-spacing: .02em; white-space: nowrap; }
+    .topbar-logo span { color: var(--gold); }
+    .topbar-divider { width: 1px; height: 28px; background: rgba(255,255,255,.3); }
+    .topbar-label { font-size: 14px; font-weight: 600; opacity: .85; flex: 1; }
+    .search-wrap { position: relative; }
+    .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: rgba(255,255,255,.7); }
+    #search-input {
+      background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+      border-radius: 8px; padding: 7px 12px 7px 34px;
+      color: #fff; font-family: inherit; font-size: 13px; width: 220px;
+      outline: none; transition: background .2s;
+    }
+    #search-input::placeholder { color: rgba(255,255,255,.6); }
+    #search-input:focus { background: rgba(255,255,255,.25); }
+    .hamburger { display: none; background: none; border: none; color: #fff; cursor: pointer; padding: 4px; }
+    .hamburger svg { width: 22px; height: 22px; }
+
+    /* LAYOUT */
+    .body-wrap { display: flex; flex: 1; }
+
+    /* OVERLAY */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 90; }
+    .overlay.open { display: block; }
+
+    /* SIDEBAR */
     .sidebar {
-      width: 260px;
-      flex-shrink: 0;
-      background: var(--green-dark);
-      display: flex;
-      flex-direction: column;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      overflow-y: auto;
+      width: var(--sidebar-w); flex-shrink: 0;
+      background: #fff; border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 20px 0; position: sticky; top: 60px;
+      height: calc(100vh - 60px); overflow-y: auto;
     }
-
-    .sidebar-brand {
-      padding: 28px 24px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .brand-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--gold);
-      color: var(--green-dark);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      padding: 4px 10px;
-      border-radius: 999px;
-      margin-bottom: 12px;
-    }
-
-    .brand-badge svg { width: 12px; height: 12px; }
-
-    .sidebar-brand h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 20px;
-      color: #fff;
-      line-height: 1.2;
-      letter-spacing: -0.01em;
-    }
-
-    .sidebar-brand p {
-      font-size: 12px;
-      color: rgba(255,255,255,0.5);
-      margin-top: 6px;
-      line-height: 1.4;
-    }
-
     .sidebar-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      padding: 16px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px; padding: 0 16px 16px;
+      border-bottom: 1px solid var(--border); margin-bottom: 16px;
     }
-
     .stat-box {
-      background: rgba(255,255,255,0.06);
-      border-radius: var(--radius-sm);
-      padding: 10px 12px;
+      background: var(--bg); border-radius: 8px; padding: 10px;
+      text-align: center; display: flex; flex-direction: column; gap: 2px;
     }
+    .stat-box strong { font-size: 20px; font-weight: 700; color: var(--green); }
+    .stat-box span { font-size: 11px; color: var(--muted); font-weight: 500; }
 
-    .stat-box strong {
-      display: block;
-      font-family: 'DM Serif Display', serif;
-      font-size: 22px;
-      color: var(--gold-mid);
-      line-height: 1;
-    }
-
-    .stat-box span {
-      font-size: 10px;
-      color: rgba(255,255,255,0.5);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-weight: 600;
-    }
-
-    .sidebar-nav {
-      padding: 16px 12px;
-      flex: 1;
-    }
-
-    .nav-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.35);
-      padding: 0 12px;
-      margin-bottom: 8px;
-    }
+    .nav-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 0 16px 8px; }
 
     .nav-btn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      width: 100%;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      color: rgba(255,255,255,0.65);
-      padding: 10px 12px;
-      border-radius: var(--radius-sm);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13.5px;
-      font-weight: 500;
-      text-align: left;
-      transition: var(--transition);
-      margin-bottom: 2px;
-      position: relative;
+      display: flex; align-items: center; gap: 8px;
+      width: 100%; padding: 10px 16px;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 500;
+      color: var(--muted); text-align: left; transition: all .15s;
+      border-left: 3px solid transparent;
     }
-
-    .nav-btn:hover {
-      background: rgba(255,255,255,0.06);
-      color: #fff;
-    }
-
-    .nav-btn.active {
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      font-weight: 600;
-    }
-
-    .nav-btn.active::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 3px;
-      height: 60%;
-      background: var(--gold);
-      border-radius: 0 3px 3px 0;
-    }
-
-    .nav-icon {
-      width: 30px;
-      height: 30px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-size: 14px;
-    }
-
-    .nav-btn.active .nav-icon {
-      background: rgba(255,255,255,0.12);
-    }
-
+    .nav-btn:hover { background: var(--bg); color: var(--text); }
+    .nav-btn.active { background: #f0f7f0; color: var(--green); border-left-color: var(--green); font-weight: 600; }
+    .nav-icon { font-size: 15px; }
     .nav-count {
-      margin-left: auto;
-      background: rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.6);
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 7px;
-      border-radius: 999px;
+      margin-left: auto; background: var(--bg); border-radius: 999px;
+      padding: 2px 7px; font-size: 11px; font-weight: 700; color: var(--muted);
     }
+    .nav-btn.active .nav-count { background: #d6ebd6; color: var(--green); }
 
-    .nav-btn.active .nav-count {
-      background: var(--gold);
-      color: var(--green-dark);
-    }
+    .sidebar-footer { margin-top: auto; padding: 16px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); line-height: 1.5; }
 
-    .sidebar-footer {
-      padding: 16px 20px;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      font-size: 11px;
-      color: rgba(255,255,255,0.3);
-      text-align: center;
-      line-height: 1.6;
-    }
+    /* FAB */
+    .fab { display: none; }
 
-    /* ─── MAIN CONTENT ─── */
-    .main {
-      flex: 1;
-      overflow-x: hidden;
-      min-width: 0;
-    }
+    /* CONTENT */
+    .content { flex: 1; padding: 32px; min-width: 0; }
 
-    /* ─── TOPBAR ─── */
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: rgba(244,248,245,0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 14px 32px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .topbar-title {
-      font-family: 'DM Serif Display', serif;
-      font-size: 17px;
-      color: var(--green-dark);
-      flex: 1;
-    }
-
-    .search-wrap {
-      position: relative;
-      flex: 1;
-      max-width: 320px;
-    }
-
-    .search-wrap svg {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--muted);
-      width: 16px;
-      height: 16px;
-      pointer-events: none;
-    }
-
-    #search-input {
-      width: 100%;
-      padding: 9px 12px 9px 36px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13.5px;
-      background: #fff;
-      color: var(--ink);
-      outline: none;
-      transition: var(--transition);
-    }
-
-    #search-input:focus {
-      border-color: var(--green-mid);
-      box-shadow: 0 0 0 3px rgba(11,93,56,0.1);
-    }
-
-    #search-input::placeholder { color: var(--muted); }
-
-    /* ─── CONTENT AREA ─── */
-    .content {
-      padding: 32px;
-    }
-
-    /* ─── PANEL HEADER ─── */
-    .panel-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      gap: 16px;
-    }
-
-    .panel-eyebrow {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-
-    .category-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--gold);
-      flex-shrink: 0;
-    }
-
-    .category-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .panel-header h2 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 30px;
-      letter-spacing: -0.02em;
-      color: var(--ink);
-      line-height: 1.1;
-    }
-
-    .panel-header p {
-      color: var(--muted);
-      font-size: 14px;
-      margin-top: 4px;
-    }
-
-    .report-count-badge {
-      flex-shrink: 0;
-      background: var(--green-soft);
-      border: 1px solid var(--border);
-      color: var(--green);
-      font-size: 13px;
-      font-weight: 600;
-      padding: 6px 14px;
-      border-radius: 999px;
-    }
-
-    #hot-items .report-card::before {
-      background: linear-gradient(90deg, #e8400a, #f9a825);
-    }
-    #hot-items .report-link {
-      background: #c73208;
-    }
-    #hot-items .report-link:hover {
-      background: #a82806;
-    }
-
-    /* ─── REPORT GRID ─── */
-    .report-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-    }
-
-    /* ─── REPORT CARD ─── */
-    .report-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      box-shadow: var(--shadow-sm);
-      transition: var(--transition);
-      position: relative;
-      overflow: hidden;
-      animation: cardIn 0.3s ease both;
-    }
-
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .report-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--green), var(--gold));
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    }
-
-    .report-card:hover {
-      box-shadow: var(--shadow-lg);
-      transform: translateY(-4px);
-      border-color: #b5d4c0;
-    }
-
-    .card-pills {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      border-radius: 999px;
-      padding: 4px 10px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-    }
-
-    .pill-status {
-      background: var(--green-soft);
-      color: var(--green);
-      border: 1px solid rgba(11,93,56,0.15);
-      cursor: pointer;
-      user-select: none;
-      position: relative;
-      transition: var(--transition);
-    }
-
-    .pill-status:hover { filter: brightness(0.93); }
-
-    .pill-status::before {
-      content: '';
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--green-mid);
-      display: inline-block;
-      flex-shrink: 0;
-    }
-
-    /* Status variants */
-    .pill-status[data-status="Current"]      { background: var(--green-soft); color: var(--green); border-color: rgba(11,93,56,0.15); }
-    .pill-status[data-status="Current"]::before { background: var(--green-mid); }
-
-    .pill-status[data-status="Outdated"]     { background: #fef2f2; color: #9b1c1c; border-color: rgba(185,28,28,0.2); }
-    .pill-status[data-status="Outdated"]::before { background: #dc2626; }
-
-    .pill-status[data-status="Updating"]  { background: #eff6ff; color: #1e40af; border-color: rgba(37,99,235,0.2); }
-    .pill-status[data-status="Updating"]::before { background: #3b82f6; }
-
-    /* Tooltip hint */
-    .pill-status::after {
-      content: 'Click to change status';
-      position: absolute;
-      bottom: calc(100% + 6px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--ink);
-      color: #fff;
-      font-size: 10px;
-      font-weight: 500;
-      white-space: nowrap;
-      padding: 4px 8px;
-      border-radius: 6px;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.15s ease;
-      z-index: 10;
-    }
-
-    .pill-status:hover::after { opacity: 1; }
-
-    .pill-cadence {
-      background: var(--gold-light);
-      color: #7a5700;
-      border: 1px solid rgba(232,168,0,0.2);
-    }
-
-    .report-card h3 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 20px;
-      line-height: 1.2;
-      letter-spacing: -0.01em;
-      color: var(--ink);
-      margin-bottom: 10px;
-    }
-
-    .report-card p {
-      font-size: 13.5px;
-      line-height: 1.6;
-      color: var(--muted);
-      flex: 1;
-    }
-
-    .report-link {
-      margin-top: 20px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-      background: var(--green);
-      color: #fff;
-      padding: 10px 16px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      font-weight: 600;
-      transition: var(--transition);
-      align-self: flex-start;
-    }
-
-    .report-link:hover {
-      background: var(--green-dark);
-      gap: 12px;
-    }
-
-    .report-link svg {
-      width: 14px;
-      height: 14px;
-      transition: var(--transition);
-    }
-
-    /* ─── TAB PANEL ─── */
+    /* TAB PANELS */
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* ─── EMPTY STATE ─── */
-    .empty-state {
-      text-align: center;
-      padding: 64px 32px;
-      color: var(--muted);
+    .panel-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 24px; gap: 16px;
+    }
+    .panel-eyebrow { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .category-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+    .category-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green); }
+    .panel-header h2 { font-size: 22px; font-weight: 700; color: var(--text); }
+    .panel-header p { font-size: 14px; color: var(--muted); margin-top: 4px; }
+    .report-count-badge {
+      background: #f0f7f0; color: var(--green); border: 1px solid rgba(45,106,45,.15);
+      border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 700;
+      white-space: nowrap; flex-shrink: 0;
     }
 
-    .empty-state svg {
-      width: 48px;
-      height: 48px;
-      opacity: 0.3;
-      margin-bottom: 16px;
-    }
+    /* REPORT GRID */
+    .report-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
 
-    .empty-state h3 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 22px;
-      color: var(--ink);
-      margin-bottom: 8px;
+    .report-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 20px; display: flex; flex-direction: column; gap: 10px;
+      transition: box-shadow .2s, transform .2s;
     }
+    .report-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); transform: translateY(-1px); }
 
-    /* ─── MOBILE TOGGLE ─── */
-    .mobile-nav-toggle {
-      display: none;
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 100;
-      background: var(--green);
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      width: 52px;
-      height: 52px;
-      cursor: pointer;
-      box-shadow: var(--shadow-lg);
-      font-size: 22px;
-      align-items: center;
-      justify-content: center;
+    .card-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pill {
+      border-radius: 999px; padding: 4px 10px;
+      font-size: 11px; font-weight: 700; letter-spacing: .03em;
     }
+    .pill-status { background: #e8f5e9; color: #1b5e20; border: 1px solid rgba(27,94,32,.15); }
+    .pill-cadence { background: #e8f0fe; color: #1a237e; border: 1px solid rgba(26,35,126,.15); }
 
-    /* ─── RESPONSIVE ─── */
-    @media (max-width: 900px) {
+    .report-card h3 { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.3; }
+    .report-card p { font-size: 13px; color: var(--muted); line-height: 1.55; flex: 1; }
+
+    .report-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--green); font-size: 13px; font-weight: 600;
+      text-decoration: none; margin-top: 4px; transition: gap .15s;
+    }
+    .report-link svg { width: 14px; height: 14px; }
+    .report-link:hover { gap: 9px; }
+
+    /* SEARCH */
+    #all-search-results { display: none; }
+    #all-search-results.active { display: block; }
+    #empty-state { display: none; padding: 48px; text-align: center; color: var(--muted); }
+    #empty-state svg { width: 40px; height: 40px; margin: 0 auto 12px; display: block; stroke: var(--border); }
+    #search-result-count { font-size: 13px; color: var(--muted); }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
       .sidebar {
-        position: fixed;
-        left: -260px;
-        top: 0;
-        height: 100%;
-        z-index: 50;
-        transition: left 0.3s ease;
+        position: fixed; left: -260px; top: 0; height: 100vh;
+        width: 260px; z-index: 95; transition: left .25s ease;
+        padding-top: 80px;
       }
-
       .sidebar.open { left: 0; }
-
-      .sidebar-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.4);
-        z-index: 49;
-      }
-
-      .sidebar-overlay.open { display: block; }
-
-      .mobile-nav-toggle { display: flex; }
-
-      .topbar { padding: 12px 20px; }
+      .body-wrap { flex-direction: column; }
       .content { padding: 20px; }
-
-      .panel-header { flex-direction: column; }
-    }
-
-    @media (max-width: 540px) {
-      .report-grid { grid-template-columns: 1fr; }
-      .search-wrap { max-width: 100%; }
+      .hamburger { display: flex; }
+      .topbar-label { display: none; }
+      #search-input { width: 160px; }
+      .fab {
+        display: flex; position: fixed; bottom: 20px; right: 20px; z-index: 150;
+        background: var(--green); color: #fff; border: none; border-radius: 999px;
+        padding: 12px 18px; font-family: inherit; font-size: 14px; font-weight: 700;
+        cursor: pointer; box-shadow: 0 4px 16px rgba(45,106,45,.4); gap: 6px; align-items: center;
+      }
     }
   </style>
 </head>
 <body>
 
-<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="topbar-logo">McCoy's <span>Report Hub</span></div>
+    <div class="topbar-divider"></div>
+    <div class="topbar-label" id="topbar-label">Hot Items</div>
+    <div class="search-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search-input" placeholder="Search reports…" autocomplete="off" />
+    </div>
+  </header>
 
-<div class="layout">
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
-  <!-- ── SIDEBAR ── -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-badge">
-        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
-        McCoy's Building Supply
+  <div class="body-wrap">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-stats">
+        <div class="stat-box"><strong>15</strong><span>Reports</span></div>
+        <div class="stat-box"><strong>6</strong><span>Categories</span></div>
+        <div class="stat-box"><strong>5</strong><span>Weekly</span></div>
+        <div class="stat-box"><strong>6</strong><span>Monthly</span></div>
       </div>
-      <h1>Store Dev &amp; Fleet Hub</h1>
-      <p>Centralized reporting across fleet, facilities, budgeting &amp; capital projects.</p>
-    </div>
 
-    <div class="sidebar-stats">
-      <div class="stat-box"><strong>14</strong><span>Reports</span></div>
-      <div class="stat-box"><strong>6</strong><span>Categories</span></div>
-      <div class="stat-box"><strong>7</strong><span>Weekly</span></div>
-      <div class="stat-box"><strong>5</strong><span>Monthly</span></div>
-    </div>
-
-    <nav class="sidebar-nav">
       <div class="nav-label">Report Categories</div>
 
-      <button class="nav-btn" data-tab="hot-items" style="color:#fff;">
+      <button class="nav-btn active" data-tab="hot-items">
         <span class="nav-icon">🔥</span>
         Hot Items
         <span class="nav-count">1</span>
       </button>
 
-      <button class="nav-btn active" data-tab="fleet-efficiency">
-        <span class="nav-icon">⚡</span>
+      <button class="nav-btn" data-tab="fleet-efficiency">
+        <span class="nav-icon">🚛</span>
         Fleet Efficiency
-        <span class="nav-count">2</span>
+        <span class="nav-count">3</span>
       </button>
 
-      <button class="nav-btn" data-tab="fleet-operations">
-        <span class="nav-icon">🚚</span>
-        Fleet Operations
+      <button class="nav-btn" data-tab="fleet-maintenance">
+        <span class="nav-icon">🔧</span>
+        Fleet Maintenance
         <span class="nav-count">3</span>
       </button>
 
       <button class="nav-btn" data-tab="facilities-operations">
-        <span class="nav-icon">🏗️</span>
+        <span class="nav-icon">🏢</span>
         Facilities Operations
         <span class="nav-count">2</span>
       </button>
@@ -670,41 +242,40 @@
       </button>
 
       <button class="nav-btn" data-tab="capital-projects">
-        <span class="nav-icon">🏛️</span>
+        <span class="nav-icon">🏗️</span>
         Capital Projects
-        <span class="nav-count">3</span>
+        <span class="nav-count">1</span>
       </button>
+
+      <div class="sidebar-footer">
+        Store Development &amp; Fleet Report Hub<br>
+        Links open in a new tab
+      </div>
     </nav>
 
-    <div class="sidebar-footer">
-      Store Development &amp; Fleet Report Hub<br>
-      Links open in a new tab
-    </div>
-  </aside>
+    <!-- CONTENT -->
+    <main class="content">
 
-  <!-- ── MAIN ── -->
-  <div class="main">
-
-    <!-- Sticky topbar -->
-    <div class="topbar">
-      <span class="topbar-title" id="topbar-label">Fleet Efficiency</span>
-
-      <div class="search-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input type="text" id="search-input" placeholder="Search reports…" autocomplete="off" />
-      </div>
-    </div>
-
-    <!-- Content -->
-    <div class="content">
-
-      <!-- ── HOT ITEMS ── -->
-      <section id="hot-items" class="tab-panel">
+      <!-- SEARCH RESULTS PANEL -->
+      <section id="all-search-results" class="tab-panel">
         <div class="panel-header">
           <div>
-            <div class="panel-eyebrow"><span class="category-dot" style="background:#e8400a;"></span><span class="category-label">Hot Items</span></div>
+            <h2>Search Results</h2>
+            <p id="search-result-count"></p>
+          </div>
+        </div>
+        <div class="report-grid" id="search-grid"></div>
+        <div id="empty-state">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <p>No reports matched your search.</p>
+        </div>
+      </section>
+
+      <!-- HOT ITEMS -->
+      <section id="hot-items" class="tab-panel active">
+        <div class="panel-header">
+          <div>
+            <div class="panel-eyebrow"><span class="category-dot" style="background:#c47f00;"></span><span class="category-label" style="color:#c47f00;">Hot Items</span></div>
             <h2>Hot Items</h2>
             <p>Priority issues and escalated items requiring immediate attention.</p>
           </div>
@@ -712,10 +283,10 @@
         </div>
         <div class="report-grid">
 
-          <article class="report-card" data-title="hot issues tracker" style="--accent:#e8400a;">
+          <article class="report-card" data-title="hot issues tracker">
             <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
-              <span class="pill" style="background:#fff0eb;color:#8a2000;border:1px solid rgba(232,64,10,0.2);font-size:11px;font-weight:700;letter-spacing:.03em;padding:4px 10px;border-radius:999px;">🔥 High Priority</span>
+              <span class="pill" style="background:#e8f5e9;color:#1b5e20;border:1px solid rgba(27,94,32,.15);font-size:11px;font-weight:700;letter-spacing:.03em;padding:4px 10px;border-radius:999px;">🟢 Live</span>
+              <span class="pill" style="background:#fff8e1;color:#7a5000;border:1px solid rgba(196,127,0,0.25);font-size:11px;font-weight:700;letter-spacing:.03em;padding:4px 10px;border-radius:999px;">🔥 High Priority</span>
             </div>
             <h3>Hot Issues Tracker</h3>
             <p>Tracks high-priority operational issues across departments, surfacing escalated items that require immediate follow-up and resolution.</p>
@@ -728,21 +299,21 @@
         </div>
       </section>
 
-      <!-- ── FLEET EFFICIENCY ── -->
-      <section id="fleet-efficiency" class="tab-panel active">
+      <!-- FLEET EFFICIENCY -->
+      <section id="fleet-efficiency" class="tab-panel">
         <div class="panel-header">
           <div>
             <div class="panel-eyebrow"><span class="category-dot"></span><span class="category-label">Fleet Efficiency</span></div>
             <h2>Fleet Efficiency</h2>
-            <p>Utilization analysis across forklift and truck assets.</p>
+            <p>Utilization analysis and cost-per-mile benchmarking across fleet assets.</p>
           </div>
-          <span class="report-count-badge">2 reports</span>
+          <span class="report-count-badge">3 reports</span>
         </div>
         <div class="report-grid">
 
           <article class="report-card" data-title="forklift utilization report">
             <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
+              <span class="pill pill-status">Updated 5/4/2026</span>
               <span class="pill pill-cadence">Monthly Update</span>
             </div>
             <h3>Forklift Utilization Report</h3>
@@ -755,7 +326,7 @@
 
           <article class="report-card" data-title="truck utilization">
             <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
+              <span class="pill pill-status">Updated 5/29/2026</span>
               <span class="pill pill-cadence">Monthly Update</span>
             </div>
             <h3>Truck Utilization</h3>
@@ -766,16 +337,29 @@
             </a>
           </article>
 
+          <article class="report-card" data-title="distribution cpm analysis">
+            <div class="card-pills">
+              <span class="pill pill-status">Updated 5/29/2026</span>
+              <span class="pill pill-cadence">Monthly Update</span>
+            </div>
+            <h3>Distribution CPM Analysis</h3>
+            <p>Tracks the 3-year cost-per-mile trends across all three Distribution facilities, providing monthly benchmarking data to evaluate internal fleet performance against 3PL alternatives.</p>
+            <a class="report-link" href="https://julianchetlange-svg.github.io/Distribution-CPM/" target="_blank" rel="noopener noreferrer">
+              Open Report
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </article>
+
         </div>
       </section>
 
-      <!-- ── FLEET OPERATIONS ── -->
-      <section id="fleet-operations" class="tab-panel">
+      <!-- FLEET MAINTENANCE -->
+      <section id="fleet-maintenance" class="tab-panel">
         <div class="panel-header">
           <div>
-            <div class="panel-eyebrow"><span class="category-dot"></span><span class="category-label">Fleet Operations</span></div>
-            <h2>Fleet Operations</h2>
-            <p>Work orders, PM compliance, and year-over-year spend.</p>
+            <div class="panel-eyebrow"><span class="category-dot"></span><span class="category-label">Fleet Maintenance</span></div>
+            <h2>Fleet Maintenance</h2>
+            <p>Work order follow-up, PM compliance, and spend tracking.</p>
           </div>
           <span class="report-count-badge">3 reports</span>
         </div>
@@ -783,12 +367,12 @@
 
           <article class="report-card" data-title="fleet work order follow-up">
             <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
+              <span class="pill pill-status">Updated 5/25/2026</span>
               <span class="pill pill-cadence">Weekly Update</span>
             </div>
             <h3>Fleet Work Order Follow-Up</h3>
-            <p>Tracks fleet work order aging, follow-up compliance, and missed actions to support timely maintenance execution and accountability.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Fleet-WO-Follow-Up/" target="_blank" rel="noopener noreferrer">
+            <p>Tracks open fleet work orders by age and status, flagging overdue items and follow-up actions needed to keep maintenance on schedule.</p>
+            <a class="report-link" href="https://julianchetlange-svg.github.io/Fleet-WO-Follow-Up-Report/" target="_blank" rel="noopener noreferrer">
               Open Report
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
@@ -796,11 +380,11 @@
 
           <article class="report-card" data-title="pm compliance dashboard">
             <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
-              <span class="pill pill-cadence">Weekly Follow-Up</span>
+              <span class="pill pill-status">Updated 5/25/2026</span>
+              <span class="pill pill-cadence">Weekly Update</span>
             </div>
             <h3>PM Compliance Dashboard</h3>
-            <p>Monitors preventive maintenance compliance, identifies overdue assets, and highlights open work orders tied to missed PM intervals.</p>
+            <p>Monitors preventive maintenance compliance rates across the fleet, identifying locations and asset types falling behind on scheduled service intervals.</p>
             <a class="report-link" href="https://julianchetlange-svg.github.io/PM-Compliance-Dashboard/" target="_blank" rel="noopener noreferrer">
               Open Report
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -809,7 +393,7 @@
 
           <article class="report-card" data-title="fleet spend yoy report">
             <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
+              <span class="pill pill-status">Updated 5/27/2026</span>
               <span class="pill pill-cadence">Monthly Update</span>
             </div>
             <h3>Fleet Spend YOY Report</h3>
@@ -823,7 +407,7 @@
         </div>
       </section>
 
-      <!-- ── FACILITIES OPERATIONS ── -->
+      <!-- FACILITIES OPERATIONS -->
       <section id="facilities-operations" class="tab-panel">
         <div class="panel-header">
           <div>
@@ -831,13 +415,13 @@
             <h2>Facilities Operations</h2>
             <p>Work order tracking and facilities spend analysis.</p>
           </div>
-          <span class="report-count-badge">3 reports</span>
+          <span class="report-count-badge">2 reports</span>
         </div>
         <div class="report-grid">
 
           <article class="report-card" data-title="facilities work order follow-up">
             <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
+              <span class="pill pill-status">Updated 5/25/2026</span>
               <span class="pill pill-cadence">Weekly Update</span>
             </div>
             <h3>Facilities Work Order Follow-Up</h3>
@@ -850,25 +434,12 @@
 
           <article class="report-card" data-title="facilities spend dashboard">
             <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
+              <span class="pill pill-status">Updated 5/4/2026</span>
               <span class="pill pill-cadence">Monthly Update</span>
             </div>
             <h3>Facilities Spend Dashboard</h3>
-            <p>Tracks facilities-related spend across locations, highlighting cost trends, outliers, and opportunities for improved budget control.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Facility-Spend-Dashboard/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="racking parts inventory & repair cost tracker">
-            <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
-              <span class="pill pill-cadence">Live</span>
-            </div>
-            <h3>Racking Parts Inventory &amp; Repair Cost Tracker</h3>
-            <p>Tracks active racking parts inventory and assigns appropriate racking costs to a store upon repair from internal teams.</p>
-            <a class="report-link" href="https://smccormick50.github.io/McCoy-Racking-/" target="_blank" rel="noopener noreferrer">
+            <p>Provides a comprehensive view of facilities-related spend across locations, tracking costs by category to identify trends and control expenditures.</p>
+            <a class="report-link" href="https://julianchetlange-svg.github.io/Facilities-Spend-Dashboard/" target="_blank" rel="noopener noreferrer">
               Open Report
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
@@ -877,13 +448,13 @@
         </div>
       </section>
 
-      <!-- ── BUDGETING & FORECASTING ── -->
+      <!-- BUDGETING & FORECASTING -->
       <section id="budgeting-and-forecasting" class="tab-panel">
         <div class="panel-header">
           <div>
             <div class="panel-eyebrow"><span class="category-dot"></span><span class="category-label">Budgeting &amp; Forecasting</span></div>
             <h2>Budgeting &amp; Forecasting</h2>
-            <p>Fuel trends and strategic spend analysis.</p>
+            <p>Fuel trends, spend proposals, and fleet lifecycle planning.</p>
           </div>
           <span class="report-count-badge">3 reports</span>
         </div>
@@ -891,11 +462,11 @@
 
           <article class="report-card" data-title="mtd fuel trends">
             <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
-              <span class="pill pill-cadence">Weekly Update</span>
+              <span class="pill pill-status">Updated 5/25/2026</span>
+              <span class="pill pill-cadence">Monthly Update</span>
             </div>
             <h3>MTD Fuel Trends</h3>
-            <p>Tracks month-to-date fuel spend, cost per gallon trends, and volume patterns to monitor budget performance and project end-of-month fuel expense.</p>
+            <p>Monitors month-to-date fuel consumption and cost trends across the fleet, surfacing anomalies and location-level variances to support budget management.</p>
             <a class="report-link" href="https://julianchetlange-svg.github.io/MTD-Fuel-Trends/" target="_blank" rel="noopener noreferrer">
               Open Report
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -904,11 +475,11 @@
 
           <article class="report-card" data-title="additional spend proposal">
             <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
+              <span class="pill pill-status">Updated 5/4/2026</span>
               <span class="pill pill-cadence">Strategic Analysis</span>
             </div>
             <h3>Additional Spend Proposal</h3>
-            <p>Evaluates pre-purchase scenarios ahead of emissions changes, including cost impacts, timing strategies, and ROI considerations.</p>
+            <p>Evaluates fleet replacement opportunities by modeling emissions impact, revenue implications, and pricing scenarios to support capital allocation decisions.</p>
             <a class="report-link" href="https://julianchetlange-svg.github.io/Fleet-Replacement-Opportunity---Emissions-REV-Pricing/" target="_blank" rel="noopener noreferrer">
               Open Report
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -917,7 +488,7 @@
 
           <article class="report-card" data-title="fleet lifecycle budget planning">
             <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
+              <span class="pill pill-status">Updated 5/4/2026</span>
               <span class="pill pill-cadence">Quarterly Update</span>
             </div>
             <h3>Fleet Lifecycle &amp; Budget Planning</h3>
@@ -931,222 +502,128 @@
         </div>
       </section>
 
-      <!-- ── CAPITAL PROJECTS ── -->
+      <!-- CAPITAL PROJECTS -->
       <section id="capital-projects" class="tab-panel">
         <div class="panel-header">
           <div>
             <div class="panel-eyebrow"><span class="category-dot"></span><span class="category-label">Capital Projects</span></div>
             <h2>Capital Projects</h2>
-            <p>Active builds, project schedules, and capital proposals.</p>
+            <p>Project tracking and progress summaries.</p>
           </div>
-          <span class="report-count-badge">3 reports</span>
+          <span class="report-count-badge">1 report</span>
         </div>
         <div class="report-grid">
 
-          <article class="report-card" data-title="project summary progress">
+          <article class="report-card" data-title="project summary and progress">
             <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
+              <span class="pill pill-status">Updated 5/26/2026</span>
               <span class="pill pill-cadence">Weekly Update</span>
             </div>
             <h3>Project Summary &amp; Progress</h3>
-            <p>Provides a weekly view of capital project status, progress tracking, and key milestones across active builds and major initiatives.</p>
+            <p>Provides a consolidated view of active capital projects, tracking milestones, budget status, and completion timelines to support leadership oversight.</p>
             <a class="report-link" href="https://julianchetlange-svg.github.io/Project-Summary-Progress/" target="_blank" rel="noopener noreferrer">
               Open Report
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
           </article>
 
-          <article class="report-card" data-title="rio truss blade saw proposal">
-            <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
-              <span class="pill pill-cadence">Project Proposal</span>
-            </div>
-            <h3>Rio Truss Blade Saw Proposal</h3>
-            <p>Presents project scope, cost, and expected operational impact for a proposed capital investment in truss blade saw equipment.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Rio-Truss-Blade-Saw/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="canyon lake project schedule">
-            <div class="card-pills">
-              <span class="pill pill-status" data-status="Current">Current</span>
-              <span class="pill pill-cadence">Project Progress</span>
-            </div>
-            <h3>Canyon Lake Project Schedule</h3>
-            <p>Tracks project timeline, key milestones, and schedule progress for the Canyon Lake build.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Canyon-Lake-Schedule/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
         </div>
       </section>
 
-      <!-- ── SEARCH: ALL REPORTS VIEW ── -->
-      <section id="all-search-results" class="tab-panel">
-        <div class="panel-header">
-          <div>
-            <h2>Search Results</h2>
-            <p id="search-result-count"></p>
-          </div>
-        </div>
-        <div class="report-grid" id="search-grid"></div>
-        <div class="empty-state" id="empty-state" style="display:none">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <h3>No reports found</h3>
-          <p>Try a different search term.</p>
-        </div>
-      </section>
+    </main>
+  </div>
 
-    </div><!-- /content -->
-  </div><!-- /main -->
-</div><!-- /layout -->
+  <button class="fab" onclick="toggleSidebar()">☰ Menu</button>
 
-<button class="mobile-nav-toggle" onclick="toggleSidebar()" aria-label="Toggle navigation">☰</button>
+  <script>
+    const navBtns     = document.querySelectorAll('.nav-btn');
+    const panels      = document.querySelectorAll('.tab-panel');
+    const searchInput = document.getElementById('search-input');
+    const topbarLabel = document.getElementById('topbar-label');
+    let   currentTab  = 'hot-items';
 
-<script>
-  // ── Data (mirrors the DOM) for search
-  const allReports = [
-    { title: 'Hot Issues Tracker', desc: 'Tracks high-priority operational issues across departments, surfacing escalated items that require immediate follow-up and resolution.', cadence: 'High Priority', href: 'https://julianchetlange-svg.github.io/Hot-Issues-Tracker/', tab: 'hot-items' },
-    { title: 'Forklift Utilization Report', desc: 'Analyzes forklift utilization across locations, identifying underutilized assets and opportunities for redeployment, reduction, or lifecycle optimization.', cadence: 'Monthly Update', href: 'https://julianchetlange-svg.github.io/Forklift-Utilization-Report/', tab: 'fleet-efficiency' },
-    { title: 'Truck Utilization', desc: 'Evaluates truck utilization across routes and locations using deliveries, miles, and time metrics to identify inefficiencies and optimization opportunities.', cadence: 'Monthly Update', href: 'https://julianchetlange-svg.github.io/Fleet-Utilization-TWRE/', tab: 'fleet-efficiency' },
-    { title: 'Fleet Work Order Follow-Up', desc: 'Tracks fleet work order aging, follow-up compliance, and missed actions to support timely maintenance execution and accountability.', cadence: 'Weekly Update', href: 'https://julianchetlange-svg.github.io/Fleet-WO-Follow-Up/', tab: 'fleet-operations' },
-    { title: 'PM Compliance Dashboard', desc: 'Monitors preventive maintenance compliance, identifies overdue assets, and highlights open work orders tied to missed PM intervals.', cadence: 'Weekly Follow-Up', href: 'https://julianchetlange-svg.github.io/PM-Compliance-Dashboard/', tab: 'fleet-operations' },
-    { title: 'Fleet Spend YOY Report', desc: 'Tracks year-over-year fleet spend trends, highlighting changes in maintenance, parts, and operating costs.', cadence: 'Monthly Update', href: 'https://julianchetlange-svg.github.io/Fleet-Spend-Report-YOY/', tab: 'fleet-operations' },
-    { title: 'Facilities Work Order Follow-Up', desc: 'Tracks facilities work order aging, follow-up activity, and missed actions to support timely resolution across locations.', cadence: 'Weekly Update', href: 'https://julianchetlange-svg.github.io/Facilities-WO-Follow-Up-Report/', tab: 'facilities-operations' },
-    { title: 'Facilities Spend Dashboard', desc: 'Tracks facilities-related spend across locations, highlighting cost trends, outliers, and opportunities for improved budget control.', cadence: 'Monthly Update', href: 'https://julianchetlange-svg.github.io/Facility-Spend-Dashboard/', tab: 'facilities-operations' },
-    { title: 'Racking Parts Inventory & Repair Cost Tracker', desc: 'Tracks active racking parts inventory and assigns appropriate racking costs to a store upon repair from internal teams.', cadence: 'Live', href: 'https://smccormick50.github.io/McCoy-Racking-/', tab: 'facilities-operations' },
-    { title: 'MTD Fuel Trends', desc: 'Tracks month-to-date fuel spend, cost per gallon trends, and volume patterns to monitor budget performance and project end-of-month fuel expense.', cadence: 'Weekly Update', href: 'https://julianchetlange-svg.github.io/MTD-Fuel-Trends/', tab: 'budgeting-and-forecasting' },
-    { title: 'Additional Spend Proposal', desc: 'Evaluates pre-purchase scenarios ahead of emissions changes, including cost impacts, timing strategies, and ROI considerations.', cadence: 'Strategic Analysis', href: 'https://julianchetlange-svg.github.io/Fleet-Replacement-Opportunity---Emissions-REV-Pricing/', tab: 'budgeting-and-forecasting' },
-    { title: 'Fleet Lifecycle & Budget Planning', desc: 'Supports long-range fleet planning by tracking asset age, replacement timelines, and projected capital needs to guide budget strategy and procurement decisions.', cadence: 'Quarterly Update', href: 'https://julianchetlange-svg.github.io/Fleet-Lifecycle-Budget/', tab: 'budgeting-and-forecasting' },
-    { title: 'Project Summary & Progress', desc: 'Provides a weekly view of capital project status, progress tracking, and key milestones across active builds and major initiatives.', cadence: 'Weekly Update', href: 'https://julianchetlange-svg.github.io/Project-Summary-Progress/', tab: 'capital-projects' },
-    { title: 'Rio Truss Blade Saw Proposal', desc: 'Presents project scope, cost, and expected operational impact for a proposed capital investment in truss blade saw equipment.', cadence: 'Project Proposal', href: 'https://julianchetlange-svg.github.io/Rio-Truss-Blade-Saw/', tab: 'capital-projects' },
-    { title: 'Canyon Lake Project Schedule', desc: 'Tracks project timeline, key milestones, and schedule progress for the Canyon Lake build.', cadence: 'Project Progress', href: 'https://julianchetlange-svg.github.io/Canyon-Lake-Schedule/', tab: 'capital-projects' },
-  ];
+    const allReports = [
+      { title: 'Hot Issues Tracker',               desc: 'Tracks high-priority operational issues across departments, surfacing escalated items that require immediate follow-up and resolution.',                        cadence: 'High Priority',      href: 'https://julianchetlange-svg.github.io/Hot-Issues-Tracker/',                                          tab: 'hot-items' },
+      { title: 'Forklift Utilization Report',       desc: 'Analyzes forklift utilization across locations, identifying underutilized assets and opportunities for redeployment, reduction, or lifecycle optimization.', cadence: 'Monthly Update',     href: 'https://julianchetlange-svg.github.io/Forklift-Utilization-Report/',                               tab: 'fleet-efficiency' },
+      { title: 'Truck Utilization',                 desc: 'Evaluates truck utilization across routes and locations using deliveries, miles, and time metrics to identify inefficiencies and optimization opportunities.', cadence: 'Monthly Update',    href: 'https://julianchetlange-svg.github.io/Fleet-Utilization-TWRE/',                                    tab: 'fleet-efficiency' },
+      { title: 'Distribution CPM Analysis',         desc: 'Tracks the 3-year cost-per-mile trends across all three Distribution facilities, providing monthly benchmarking data to evaluate internal fleet performance against 3PL alternatives.', cadence: 'Monthly Update', href: 'https://julianchetlange-svg.github.io/Distribution-CPM/',             tab: 'fleet-efficiency' },
+      { title: 'Fleet Work Order Follow-Up',        desc: 'Tracks open fleet work orders by age and status, flagging overdue items and follow-up actions needed to keep maintenance on schedule.',                       cadence: 'Weekly Update',      href: 'https://julianchetlange-svg.github.io/Fleet-WO-Follow-Up-Report/',                                  tab: 'fleet-maintenance' },
+      { title: 'PM Compliance Dashboard',           desc: 'Monitors preventive maintenance compliance rates across the fleet, identifying locations and asset types falling behind on scheduled service intervals.',     cadence: 'Weekly Update',      href: 'https://julianchetlange-svg.github.io/PM-Compliance-Dashboard/',                                    tab: 'fleet-maintenance' },
+      { title: 'Fleet Spend YOY Report',            desc: 'Tracks year-over-year fleet spend trends, highlighting changes in maintenance, parts, and operating costs.',                                                 cadence: 'Monthly Update',     href: 'https://julianchetlange-svg.github.io/Fleet-Spend-Report-YOY/',                                    tab: 'fleet-maintenance' },
+      { title: 'Facilities Work Order Follow-Up',   desc: 'Tracks facilities work order aging, follow-up activity, and missed actions to support timely resolution across locations.',                                  cadence: 'Weekly Update',      href: 'https://julianchetlange-svg.github.io/Facilities-WO-Follow-Up-Report/',                              tab: 'facilities-operations' },
+      { title: 'Facilities Spend Dashboard',        desc: 'Provides a comprehensive view of facilities-related spend across locations, tracking costs by category to identify trends and control expenditures.',        cadence: 'Monthly Update',     href: 'https://julianchetlange-svg.github.io/Facilities-Spend-Dashboard/',                                  tab: 'facilities-operations' },
+      { title: 'MTD Fuel Trends',                   desc: 'Monitors month-to-date fuel consumption and cost trends across the fleet, surfacing anomalies and location-level variances to support budget management.',  cadence: 'Monthly Update',     href: 'https://julianchetlange-svg.github.io/MTD-Fuel-Trends/',                                            tab: 'budgeting-and-forecasting' },
+      { title: 'Additional Spend Proposal',         desc: 'Evaluates fleet replacement opportunities by modeling emissions impact, revenue implications, and pricing scenarios to support capital allocation decisions.', cadence: 'Strategic Analysis', href: 'https://julianchetlange-svg.github.io/Fleet-Replacement-Opportunity---Emissions-REV-Pricing/', tab: 'budgeting-and-forecasting' },
+      { title: 'Fleet Lifecycle & Budget Planning', desc: 'Supports long-range fleet planning by tracking asset age, replacement timelines, and projected capital needs to guide budget strategy and procurement decisions.', cadence: 'Quarterly Update', href: 'https://julianchetlange-svg.github.io/Fleet-Lifecycle-Budget/',                             tab: 'budgeting-and-forecasting' },
+      { title: 'Project Summary & Progress',        desc: 'Provides a consolidated view of active capital projects, tracking milestones, budget status, and completion timelines to support leadership oversight.',      cadence: 'Weekly Update',      href: 'https://julianchetlange-svg.github.io/Project-Summary-Progress/',                                   tab: 'capital-projects' },
+    ];
 
-  // ── Nav switching
-  let currentTab = 'fleet-efficiency';
+    function switchTab(tab) {
+      currentTab = tab;
+      navBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+      panels.forEach(p => p.classList.toggle('active', p.id === tab));
+      const activeBtn = document.querySelector(`.nav-btn[data-tab="${tab}"]`);
+      if (activeBtn) topbarLabel.textContent = activeBtn.textContent.replace(/\d+/, '').trim();
+    }
 
-  const navBtns = document.querySelectorAll('.nav-btn');
-  const panels  = document.querySelectorAll('.tab-panel');
-  const topbarLabel = document.getElementById('topbar-label');
-  const searchInput = document.getElementById('search-input');
-
-  navBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tab = btn.dataset.tab;
-      switchTab(tab);
-      closeSidebar();
-      searchInput.value = '';
+    navBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        searchInput.value = '';
+        switchTab(btn.dataset.tab);
+        closeSidebar();
+      });
     });
-  });
 
-  function switchTab(tab) {
-    currentTab = tab;
-    navBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-    panels.forEach(p => p.classList.toggle('active', p.id === tab));
-    const activeBtn = document.querySelector(`.nav-btn[data-tab="${tab}"]`);
-    topbarLabel.textContent = activeBtn ? activeBtn.textContent.replace(/\d+/, '').trim() : '';
-  }
+    const arrowSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
 
-  // ── Search
-  const arrowSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
-
-  function makeCard(r) {
-    return `
-      <article class="report-card" data-title="${r.title.toLowerCase()}">
-        <div class="card-pills">
-          <span class="pill pill-status" data-status="Current">Current</span>
-          <span class="pill pill-cadence">${r.cadence}</span>
-        </div>
-        <h3>${r.title}</h3>
-        <p>${r.desc}</p>
-        <a class="report-link" href="${r.href}" target="_blank" rel="noopener noreferrer">Open Report ${arrowSVG}</a>
-      </article>`;
-  }
-
-  searchInput.addEventListener('input', () => {
-    const q = searchInput.value.trim().toLowerCase();
-    if (!q) {
-      switchTab(currentTab);
-      topbarLabel.textContent = document.querySelector(`.nav-btn[data-tab="${currentTab}"]`).textContent.replace(/\d+/, '').trim();
-      return;
+    function makeCard(r) {
+      return `
+        <article class="report-card" data-title="${r.title.toLowerCase()}">
+          <div class="card-pills">
+            <span class="pill pill-status">Current</span>
+            <span class="pill pill-cadence">${r.cadence}</span>
+          </div>
+          <h3>${r.title}</h3>
+          <p>${r.desc}</p>
+          <a class="report-link" href="${r.href}" target="_blank" rel="noopener noreferrer">Open Report ${arrowSVG}</a>
+        </article>`;
     }
 
-    // Show search panel
-    navBtns.forEach(b => b.classList.remove('active'));
-    panels.forEach(p => p.classList.toggle('active', p.id === 'all-search-results'));
-    topbarLabel.textContent = `Search: "${searchInput.value}"`;
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      if (!q) { switchTab(currentTab); return; }
 
-    const results = allReports.filter(r =>
-      r.title.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q) || r.cadence.toLowerCase().includes(q)
-    );
+      navBtns.forEach(b => b.classList.remove('active'));
+      panels.forEach(p => p.classList.toggle('active', p.id === 'all-search-results'));
+      topbarLabel.textContent = `Search: "${searchInput.value}"`;
 
-    const grid = document.getElementById('search-grid');
-    const empty = document.getElementById('empty-state');
-    const count = document.getElementById('search-result-count');
+      const results = allReports.filter(r =>
+        r.title.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q) || r.cadence.toLowerCase().includes(q)
+      );
 
-    if (results.length === 0) {
-      grid.innerHTML = '';
-      empty.style.display = 'block';
-      count.textContent = 'No reports matched your query.';
-    } else {
-      grid.innerHTML = results.map(makeCard).join('');
-      empty.style.display = 'none';
-      count.textContent = `${results.length} report${results.length !== 1 ? 's' : ''} found`;
-    }
-  });
+      const grid  = document.getElementById('search-grid');
+      const empty = document.getElementById('empty-state');
+      const count = document.getElementById('search-result-count');
 
-  // ── Mobile sidebar
-  function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
-    document.getElementById('overlay').classList.toggle('open');
-  }
-
-  function closeSidebar() {
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('overlay').classList.remove('open');
-  }
-
-  // ── Status cycling
-  const STATUSES = ['Current', 'Outdated', 'Updating'];
-
-  // Load saved statuses from sessionStorage
-  const savedStatuses = JSON.parse(sessionStorage.getItem('reportStatuses') || '{}');
-
-  function applyStatuses() {
-    document.querySelectorAll('.pill-status').forEach(pill => {
-      const card = pill.closest('.report-card');
-      const key  = card ? card.dataset.title : null;
-      if (key && savedStatuses[key]) {
-        pill.dataset.status = savedStatuses[key];
-        pill.textContent   = savedStatuses[key];
+      if (results.length === 0) {
+        grid.innerHTML = '';
+        empty.style.display = 'block';
+        count.textContent = 'No reports matched your query.';
+      } else {
+        grid.innerHTML = results.map(makeCard).join('');
+        empty.style.display = 'none';
+        count.textContent = `${results.length} report${results.length !== 1 ? 's' : ''} found`;
       }
     });
-  }
 
-  document.addEventListener('click', e => {
-    const pill = e.target.closest('.pill-status');
-    if (!pill) return;
-    const card    = pill.closest('.report-card');
-    const key     = card ? card.dataset.title : null;
-    const current = pill.dataset.status || 'Current';
-    const next    = STATUSES[(STATUSES.indexOf(current) + 1) % STATUSES.length];
-    pill.dataset.status = next;
-    pill.textContent    = next;
-    if (key) {
-      savedStatuses[key] = next;
-      sessionStorage.setItem('reportStatuses', JSON.stringify(savedStatuses));
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('open');
     }
-  });
-
-  // Apply on load
-  applyStatuses();
-
-  // Re-apply after search results render
-</script>
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('open');
+    }
+  </script>
 </body>
 </html>
