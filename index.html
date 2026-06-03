@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>McCoy's Report Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -203,7 +206,7 @@
     <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-stats">
-        <div class="stat-box"><strong>16</strong><span>Reports</span></div>
+        <div class="stat-box"><strong>18</strong><span>Reports</span></div>
         <div class="stat-box"><strong>6</strong><span>Categories</span></div>
         <div class="stat-box"><strong>5</strong><span>Weekly</span></div>
         <div class="stat-box"><strong>6</strong><span>Monthly</span></div>
@@ -426,12 +429,11 @@
           <div>
             <div class="panel-eyebrow"><span class="category-dot"></span><span class="category-label">Facilities Operations</span></div>
             <h2>Facilities Operations</h2>
-            <p>Work order tracking and facilities spend analysis.</p>
+            <p>Work order tracking, facilities spend analysis, and provider references.</p>
           </div>
-          <span class="report-count-badge">2 reports</span>
+          <span class="report-count-badge">4 reports</span>
         </div>
         <div class="report-grid">
-
           <article class="report-card" data-title="facilities work order follow-up">
             <div class="card-pills">
               <span class="pill pill-status">Updated 6/2/2026</span>
@@ -444,7 +446,6 @@
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
           </article>
-
           <article class="report-card" data-title="facilities spend dashboard">
             <div class="card-pills">
               <span class="pill pill-status">Updated 5/4/2026</span>
@@ -457,7 +458,30 @@
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
           </article>
-
+          <article class="report-card" data-title="electrical provider search">
+            <div class="card-pills">
+              <span class="pill pill-status">Current</span>
+              <span class="pill pill-cadence">Reference</span>
+            </div>
+            <h3>Electrical Provider Search</h3>
+            <p>Lists electrical provider, ESID number, and outage hotline for each location — a quick reference for facilities teams managing outages and provider contacts.</p>
+            <a class="report-link" href="https://smccormick50.github.io/Copy-of-Electricity-Provider-/" target="_blank" rel="noopener noreferrer">
+              Open Report
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </article>
+          <article class="report-card" data-title="racking inventory management">
+            <div class="card-pills">
+              <span class="pill pill-status">Current</span>
+              <span class="pill pill-cadence">Reference</span>
+            </div>
+            <h3>Racking Inventory Management</h3>
+            <p>Manages racking inventory for racking repairs performed by internal teams.</p>
+            <a class="report-link" href="https://smccormick50.github.io/McCoy-Racking-/login.html" target="_blank" rel="noopener noreferrer">
+              Open Report
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </article>
         </div>
       </section>
 
@@ -564,6 +588,8 @@
       { title: 'Fleet Work Order Follow-Up',        desc: 'Tracks open fleet work orders by age and status, flagging overdue items and follow-up actions needed to keep maintenance on schedule.',                       cadence: 'Weekly Update',      href: 'https://julianchetlange-svg.github.io/Fleet-WO-Follow-Up/',                                  tab: 'fleet-maintenance' },
       { title: 'PM Compliance Dashboard',           desc: 'Monitors preventive maintenance compliance rates across the fleet, identifying locations and asset types falling behind on scheduled service intervals.',     cadence: 'Weekly Update',      href: 'https://julianchetlange-svg.github.io/PM-Compliance-Dashboard/',                                    tab: 'fleet-maintenance' },
       { title: 'Fleet Spend YOY Report',            desc: 'Tracks year-over-year fleet spend trends, highlighting changes in maintenance, parts, and operating costs.',                                                 cadence: 'Monthly Update',     href: 'https://julianchetlange-svg.github.io/Fleet-Spend-Report-YOY/',                                    tab: 'fleet-maintenance' },
+      { title: 'Racking Inventory Management',       desc: 'Manages racking inventory for racking repairs performed by internal teams.', cadence: 'Reference', href: 'https://smccormick50.github.io/McCoy-Racking-/login.html', tab: 'facilities-operations' },
+      { title: 'Electrical Provider Search',         desc: 'Lists electrical provider, ESID number, and outage hotline for each location — a quick reference for facilities teams managing outages and provider contacts.', cadence: 'Reference', href: 'https://smccormick50.github.io/Copy-of-Electricity-Provider-/', tab: 'facilities-operations' },
       { title: 'Facilities Work Order Follow-Up',   desc: 'Tracks facilities work order aging, follow-up activity, and missed actions to support timely resolution across locations.',                                  cadence: 'Weekly Update',      href: 'https://julianchetlange-svg.github.io/Facilities-WO-Follow-Up-Report/',                              tab: 'facilities-operations' },
       { title: 'Facilities Spend Dashboard',        desc: 'Provides a comprehensive view of facilities-related spend across locations, tracking costs by category to identify trends and control expenditures.',        cadence: 'Monthly Update',     href: 'https://julianchetlange-svg.github.io/Facilities-Spend-Dashboard/',                                  tab: 'facilities-operations' },
       { title: 'MTD Fuel Trends',                   desc: 'Monitors month-to-date fuel consumption and cost trends across the fleet, surfacing anomalies and location-level variances to support budget management.',  cadence: 'Monthly Update',     href: 'https://julianchetlange-svg.github.io/MTD-Fuel-Trends/',                                            tab: 'budgeting-and-forecasting' },
