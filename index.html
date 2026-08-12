@@ -1,752 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>McCoy's Report Hub</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --green:   #2d6a2d;
-      --green-dk:#1f4d1f;
-      --gold:    #f5a800;
-      --bg:     #f4f5f7;
-      --card:   #ffffff;
-      --text:   #1a1a2e;
-      --muted:  #6b7280;
-      --border: #e5e7eb;
-      --sidebar-w: 240px;
-    }
-
-    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; }
-
-    /* TOPBAR */
-    .topbar {
-      position: sticky; top: 0; z-index: 100;
-      background: var(--green); color: #fff;
-      display: flex; align-items: center; gap: 16px;
-      padding: 0 24px; height: 60px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.18);
-    }
-    .topbar-logo { font-family: 'DM Serif Display', serif; font-size: 20px; letter-spacing: .02em; white-space: nowrap; }
-    .topbar-logo span { color: var(--gold); }
-    .topbar-divider { width: 1px; height: 28px; background: rgba(255,255,255,.3); }
-    .topbar-label { font-size: 14px; font-weight: 600; opacity: .85; flex: 1; }
-    .search-wrap { position: relative; }
-    .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: rgba(255,255,255,.7); }
-    #search-input {
-      background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
-      border-radius: 8px; padding: 7px 12px 7px 34px;
-      color: #fff; font-family: inherit; font-size: 13px; width: 220px;
-      outline: none; transition: background .2s;
-    }
-    #search-input::placeholder { color: rgba(255,255,255,.6); }
-    #search-input:focus { background: rgba(255,255,255,.25); }
-    .hamburger { display: none; background: none; border: none; color: #fff; cursor: pointer; padding: 4px; }
-    .hamburger svg { width: 22px; height: 22px; }
-
-    /* LAYOUT */
-    .body-wrap { display: flex; flex: 1; }
-
-    /* OVERLAY */
-    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 90; }
-    .overlay.open { display: block; }
-
-    /* SIDEBAR */
-    .sidebar {
-      width: var(--sidebar-w); flex-shrink: 0;
-      background: #fff; border-right: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      padding: 20px 0; position: sticky; top: 60px;
-      height: calc(100vh - 60px); overflow-y: auto;
-    }
-    .sidebar-stats {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 8px; padding: 0 16px 16px;
-      border-bottom: 1px solid var(--border); margin-bottom: 16px;
-    }
-    .stat-box {
-      background: var(--bg); border-radius: 8px; padding: 10px;
-      text-align: center; display: flex; flex-direction: column; gap: 2px;
-    }
-    .stat-box strong { font-size: 20px; font-weight: 700; color: var(--green); }
-    .stat-box span { font-size: 11px; color: var(--muted); font-weight: 500; }
-
-    .nav-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 0 16px 8px; }
-
-    .nav-btn {
-      display: flex; align-items: center; gap: 8px;
-      width: 100%; padding: 10px 16px;
-      background: none; border: none; cursor: pointer;
-      font-family: inherit; font-size: 13px; font-weight: 500;
-      color: var(--muted); text-align: left; transition: all .15s;
-      border-left: 3px solid transparent;
-    }
-    .nav-btn:hover { background: var(--bg); color: var(--text); }
-    .nav-btn.active { background: #f0f7f0; color: var(--green); border-left-color: var(--green); font-weight: 600; }
-    .nav-icon { font-size: 15px; }
-    .nav-count {
-      margin-left: auto; background: var(--bg); border-radius: 999px;
-      padding: 2px 7px; font-size: 11px; font-weight: 700; color: var(--muted);
-    }
-    .nav-btn.active .nav-count { background: #d6ebd6; color: var(--green); }
-
-    .sidebar-footer { margin-top: auto; padding: 16px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); line-height: 1.5; }
-
-    /* FAB */
-    .fab { display: none; }
-
-    /* CONTENT */
-    .content { flex: 1; padding: 32px; min-width: 0; }
-
-    /* TAB PANELS */
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    .panel-header {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      margin-bottom: 24px; gap: 16px;
-    }
-    .panel-eyebrow { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-    .category-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-    .category-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green); }
-    .panel-header h2 { font-size: 22px; font-weight: 700; color: var(--text); }
-    .panel-header p { font-size: 14px; color: var(--muted); margin-top: 4px; }
-    .report-count-badge {
-      background: #f0f7f0; color: var(--green); border: 1px solid rgba(45,106,45,.15);
-      border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 700;
-      white-space: nowrap; flex-shrink: 0;
-    }
-
-    /* REPORT GRID */
-    .report-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-
-    .report-card {
-      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-      padding: 20px; display: flex; flex-direction: column; gap: 10px;
-      transition: box-shadow .2s, transform .2s;
-    }
-    .report-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); transform: translateY(-1px); }
-
-    .card-pills { display: flex; gap: 6px; flex-wrap: wrap; }
-    .pill {
-      border-radius: 999px; padding: 4px 10px;
-      font-size: 11px; font-weight: 700; letter-spacing: .03em;
-    }
-    .pill-status { background: #e8f5e9; color: #1b5e20; border: 1px solid rgba(27,94,32,.15); }
-    .pill-cadence { background: #e8f0fe; color: #1a237e; border: 1px solid rgba(26,35,126,.15); }
-
-    .report-card h3 { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.3; }
-    .report-card p { font-size: 13px; color: var(--muted); line-height: 1.55; flex: 1; }
-
-    .report-link {
-      display: inline-flex; align-items: center; gap: 6px;
-      color: var(--green); font-size: 13px; font-weight: 600;
-      text-decoration: none; margin-top: 4px; transition: gap .15s;
-    }
-    .report-link svg { width: 14px; height: 14px; }
-    .report-link:hover { gap: 9px; }
-
-    /* SEARCH */
-    #all-search-results { display: none; }
-    #all-search-results.active { display: block; }
-    #empty-state { display: none; padding: 48px; text-align: center; color: var(--muted); }
-    #empty-state svg { width: 40px; height: 40px; margin: 0 auto 12px; display: block; stroke: var(--border); }
-    #search-result-count { font-size: 13px; color: var(--muted); }
-
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-      .sidebar {
-        position: fixed; left: -260px; top: 0; height: 100vh;
-        width: 260px; z-index: 95; transition: left .25s ease;
-        padding-top: 80px;
-      }
-      .sidebar.open { left: 0; }
-      .body-wrap { flex-direction: column; }
-      .content { padding: 20px; }
-      .hamburger { display: flex; }
-      .topbar-label { display: none; }
-      #search-input { width: 160px; }
-      .fab {
-        display: flex; position: fixed; bottom: 20px; right: 20px; z-index: 150;
-        background: var(--green); color: #fff; border: none; border-radius: 999px;
-        padding: 12px 18px; font-family: inherit; font-size: 14px; font-weight: 700;
-        cursor: pointer; box-shadow: 0 4px 16px rgba(45,106,45,.4); gap: 6px; align-items: center;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PM Compliance Dashboard — McCoy's Building Supply</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F5F5F0;--fg:#1A2E1A;--card:#FFFFFF;--border:#D4DDD0;--muted:#5C715C;--accent:#1B6B2A;--accent2:#D4A017;--row-hover:#EDF5ED;--green-dark:#14522A;--green-mid:#1B6B2A;--green-light:#2D8B3E;--yellow:#D4A017}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans','Segoe UI',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;padding:22px 26px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:9px 10px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;font-family:'JetBrains Mono',monospace;white-space:nowrap;user-select:none;border-bottom:2px solid var(--border)}
+th.sortable{cursor:pointer}th.active{color:var(--green-dark)}
+td{padding:8px 10px;font-size:11px;border-bottom:1px solid #E8EDE5}
+tr:hover{background:var(--row-hover)!important}
+input::placeholder{color:#8A9E8A}
+::-webkit-scrollbar{height:6px}::-webkit-scrollbar-track{background:#E8EDE5}::-webkit-scrollbar-thumb{background:#B0C4A8;border-radius:3px}
+.mono{font-family:'JetBrains Mono',monospace}.grotesk{font-family:'Space Grotesk',sans-serif}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:22px;box-shadow:0 1px 3px rgba(20,82,42,0.06)}
+.kpi-strip{display:flex;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;position:relative;overflow:hidden;flex:1 1 0;min-width:150px;box-shadow:0 1px 3px rgba(20,82,42,0.06)}
+.stat .icon{position:absolute;top:-10px;right:-6px;font-size:48px;opacity:0.06;font-weight:900;line-height:1;font-family:'JetBrains Mono',monospace}
+.stat .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:5px;font-family:'JetBrains Mono',monospace}
+.stat .value{font-size:30px;font-weight:800;line-height:1.1;font-family:'Space Grotesk',sans-serif}
+.stat .sub{font-size:11px;color:var(--muted);margin-top:3px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.grid-sm{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+.region-card{background:var(--bg);border-radius:8px;padding:12px 14px;cursor:pointer;border-left-width:3px;border-left-style:solid;transition:all 0.2s;border:1px solid var(--border)}
+.region-card:hover{box-shadow:0 2px 8px rgba(20,82,42,0.1)}
+.tab-bar{display:flex;gap:2px;margin-bottom:22px;background:var(--card);border-radius:8px;padding:3px;width:fit-content;border:1px solid var(--border)}
+.tab-btn{padding:7px 22px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+.tab-btn.active{background:var(--accent);color:#fff}.tab-btn:not(.active){background:transparent;color:var(--muted)}.tab-btn:not(.active):hover{background:#EDF5ED}
+.search-input{padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:11px;font-family:'JetBrains Mono',monospace;width:190px;outline:none}.search-input:focus{border-color:var(--accent)}
+.sev-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+.wo-badge{font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;display:inline-flex;align-items:center;gap:4px}
+.wo-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.bar-track{height:7px;background:#E8EDE5;border-radius:3px;overflow:hidden}.bar-fill{height:100%;border-radius:3px}
+.flex-between{display:flex;justify-content:space-between;align-items:center}
+.header-bar{background:var(--green-dark);color:#fff;margin:-22px -26px 22px;padding:18px 26px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}
+.header-bar h1{font-size:24px;font-weight:800;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.5px;color:#fff}
+.header-bar .sub{font-size:12px;color:#B8D4B0;margin-top:3px}.header-bar .date{font-size:11px;color:#B8D4B0;text-align:right;font-family:'JetBrains Mono',monospace}.header-bar .date strong{color:#fff;display:block;font-weight:600}
+.live-dot{width:9px;height:9px;border-radius:50%;background:var(--yellow);box-shadow:0 0 8px rgba(212,160,23,0.7);animation:pulse 2s infinite;display:inline-block}
+.accent-stripe{height:4px;background:linear-gradient(90deg,var(--green-dark),var(--green-mid),var(--yellow));margin:-22px -26px 22px}
+.accordion{border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden;background:var(--card)}
+.accordion-head{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background 0.15s;user-select:none}
+.accordion-head:hover{background:#EDF5ED}
+.accordion-arrow{transition:transform 0.2s;font-size:12px;color:var(--muted)}.accordion-arrow.open{transform:rotate(180deg)}
+.accordion-body{border-top:1px solid var(--border)}
+.store-row{padding:10px 16px 10px 32px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #E8EDE5;transition:background 0.15s}
+.store-row:last-child{border-bottom:none}.store-row:hover{background:#EDF5ED}
+.store-assets{background:var(--bg);padding:0 16px 0 32px;border-top:1px solid #E8EDE5}
+.btn-download{padding:6px 13px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--green-dark);font-size:11px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;transition:all 0.15s}
+.btn-download:hover{background:#EDF5ED;border-color:var(--accent)}
+.store-select{padding:8px 14px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:12px;font-weight:600;width:320px;outline:none}.store-select:focus{border-color:var(--accent)}
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty-state .big{font-size:36px;margin-bottom:8px}
+</style>
 </head>
 <body>
+<div id="app"></div>
+<script>
+const DATA=[
+{store:"063 Gainesville",region:"Region 02",asset:"245022",cls:"TMFL",type:"Truck Mounted Forklift",lastDate:"10/27/2025",daysSince:289,interval:150,overdue:139,hasOpenWO:true,openWO:581912},
+{store:"018 Abilene",region:"Region 02",asset:"212014",cls:"Trailer",type:"Open Air Trailer",lastDate:"01/09/2026",daysSince:215,interval:150,overdue:65,hasOpenWO:true,openWO:660779},
+{store:"018 Abilene",region:"Region 02",asset:"211011",cls:"Trailer",type:"Open Air Trailer",lastDate:"01/19/2026",daysSince:205,interval:150,overdue:55,hasOpenWO:true,openWO:670423},
+{store:"018 Abilene",region:"Region 02",asset:"482011",cls:"Trailer",type:"Flatbed Trailer",lastDate:"01/20/2026",daysSince:204,interval:150,overdue:54,hasOpenWO:true,openWO:645735},
+{store:"029 S Corpus Christi",region:"Region 04",asset:"757006",cls:"Truck",type:"24' TA Flatbed",lastDate:"01/26/2026",daysSince:198,interval:150,overdue:48,hasOpenWO:true,openWO:650191},
+{store:"098 Cleveland",region:"Region 03",asset:"211006",cls:"Trailer",type:"Millwork Trailer",lastDate:"02/03/2026",daysSince:190,interval:150,overdue:40,hasOpenWO:true,openWO:683160},
+{store:"450 McCoys Millworks",region:"Millwork",asset:"699008",cls:"Truck",type:"12' Slide Flatbed",lastDate:"02/04/2026",daysSince:189,interval:150,overdue:39,hasOpenWO:false,openWO:null},
+{store:"109 Aransas Pass",region:"Region 04",asset:"484011",cls:"Trailer",type:"Flatbed Trailer",lastDate:"02/06/2026",daysSince:187,interval:150,overdue:37,hasOpenWO:true,openWO:659651},
+{store:"035 Odessa",region:"Region 06",asset:"697002",cls:"Truck",type:"20' Slide Flatbed",lastDate:"04/08/2026",daysSince:126,interval:90,overdue:36,hasOpenWO:true,openWO:659691},
+{store:"018 Abilene",region:"Region 02",asset:"15699",cls:"Trailer",type:"Flatbed Trailer",lastDate:"02/10/2026",daysSince:183,interval:150,overdue:33,hasOpenWO:true,openWO:663065},
+{store:"040 Beeville",region:"Region 04",asset:"755011",cls:"Truck",type:"24' TA Slide Flatbed",lastDate:"02/12/2026",daysSince:181,interval:150,overdue:31,hasOpenWO:true,openWO:665504},
+{store:"762 Region 2",region:"Region 02",asset:"241040",cls:"TMFL",type:"Truck Mounted Forklift",lastDate:"02/13/2026",daysSince:180,interval:150,overdue:30,hasOpenWO:true,openWO:665837},
+{store:"084 Hobbs",region:"Region 06",asset:"384044",cls:"Forklift",type:"8K Yard Forklift",lastDate:"02/18/2026",daysSince:175,interval:150,overdue:25,hasOpenWO:true,openWO:670419},
+{store:"119 Lubbock",region:"Region 06",asset:"244003",cls:"TMFL",type:"Truck Mounted Forklift",lastDate:"02/18/2026",daysSince:175,interval:150,overdue:25,hasOpenWO:true,openWO:670420},
+{store:"061 Mt. Pleasant",region:"Region 01",asset:"245041",cls:"TMFL",type:"4-Way Truck Mounted Forklift",lastDate:"02/20/2026",daysSince:173,interval:150,overdue:23,hasOpenWO:true,openWO:671057},
+{store:"061 Mt. Pleasant",region:"Region 01",asset:"245045",cls:"TMFL",type:"4-Way Truck Mounted Forklift",lastDate:"02/20/2026",daysSince:173,interval:150,overdue:23,hasOpenWO:true,openWO:671053},
+{store:"359 Burnet Reload",region:"Distribution",asset:"753002",cls:"Truck",type:"Tractor TA",lastDate:"04/23/2026",daysSince:111,interval:90,overdue:21,hasOpenWO:true,openWO:680513},
+{store:"042 Las Cruces",region:"Region 06",asset:"215577",cls:"Trailer",type:"Pup Trailer",lastDate:"02/23/2026",daysSince:170,interval:150,overdue:20,hasOpenWO:true,openWO:699891},
+{store:"042 Las Cruces",region:"Region 06",asset:"755025",cls:"Truck",type:"Tractor SA",lastDate:"02/23/2026",daysSince:170,interval:150,overdue:20,hasOpenWO:true,openWO:673338},
+{store:"114 Alvin",region:"Region 03",asset:"244032",cls:"TMFL",type:"Truck Mounted Forklift",lastDate:"02/24/2026",daysSince:169,interval:150,overdue:19,hasOpenWO:true,openWO:674349},
+{store:"038 Rosenberg",region:"Region 03",asset:"749003",cls:"Truck",type:"Tractor TA",lastDate:"02/25/2026",daysSince:168,interval:150,overdue:18,hasOpenWO:true,openWO:675441},
+{store:"032 Palestine",region:"Region 01",asset:"211025",cls:"Trailer",type:"Open Air Trailer",lastDate:"02/26/2026",daysSince:167,interval:150,overdue:17,hasOpenWO:true,openWO:701437},
+{store:"450 McCoys Millworks",region:"Millwork",asset:"754046",cls:"Truck",type:"Tractor TA",lastDate:"02/26/2026",daysSince:167,interval:150,overdue:17,hasOpenWO:true,openWO:659654},
+{store:"028 Baytown",region:"Region 03",asset:"247008",cls:"TMFL",type:"Truck Mounted Forklift",lastDate:"02/27/2026",daysSince:166,interval:150,overdue:16,hasOpenWO:true,openWO:677119},
+{store:"115 Midlothian",region:"Region 02",asset:"757018",cls:"Truck",type:"24' TA Flatbed",lastDate:"02/27/2026",daysSince:166,interval:150,overdue:16,hasOpenWO:true,openWO:697951},
+{store:"049 Tyler",region:"Region 01",asset:"754031",cls:"Truck",type:"Tractor TA",lastDate:"02/27/2026",daysSince:166,interval:150,overdue:16,hasOpenWO:true,openWO:677122},
+{store:"052 Cleburne",region:"Region 02",asset:"212016",cls:"Trailer",type:"Open Air Trailer",lastDate:"02/27/2026",daysSince:166,interval:150,overdue:16,hasOpenWO:true,openWO:702689},
+{store:"090 Okmulgee",region:"Region 02",asset:"241025",cls:"TMFL",type:"Truck Mounted Forklift",lastDate:"02/27/2026",daysSince:166,interval:150,overdue:16,hasOpenWO:true,openWO:677118},
+{store:"096 El Campo",region:"Region 04",asset:"697032",cls:"Truck",type:"20' Slide Flatbed",lastDate:"04/28/2026",daysSince:106,interval:90,overdue:16,hasOpenWO:true,openWO:677123},
+{store:"120 Lockhart",region:"Region 07",asset:"699002",cls:"Truck",type:"20' Slide Flatbed",lastDate:"04/30/2026",daysSince:104,interval:90,overdue:14,hasOpenWO:true,openWO:678302},
+{store:"109 Aransas Pass",region:"Region 04",asset:"698015",cls:"Truck",type:"20' Slide Flatbed",lastDate:"05/01/2026",daysSince:103,interval:90,overdue:13,hasOpenWO:true,openWO:679287},
+{store:"003 Brazoria",region:"Region 04",asset:"750010",cls:"Truck",type:"Tractor TA",lastDate:"03/03/2026",daysSince:162,interval:150,overdue:12,hasOpenWO:true,openWO:680490},
+{store:"027 SE San Antonio",region:"Region 07",asset:"754048",cls:"Truck",type:"Tractor TA",lastDate:"03/04/2026",daysSince:161,interval:150,overdue:11,hasOpenWO:true,openWO:681907},
+{store:"001 Galveston",region:"Region 03",asset:"697029",cls:"Truck",type:"20' Slide Flatbed",lastDate:"05/04/2026",daysSince:100,interval:90,overdue:10,hasOpenWO:true,openWO:681908},
+{store:"044 Kerrville",region:"Region 07",asset:"757007",cls:"Truck",type:"24' TA Flatbed",lastDate:"03/06/2026",daysSince:159,interval:150,overdue:9,hasOpenWO:true,openWO:683622},
+{store:"359 Burnet Reload",region:"Distribution",asset:"753044",cls:"Truck",type:"Tractor TA",lastDate:"05/07/2026",daysSince:97,interval:90,overdue:7,hasOpenWO:true,openWO:680512},
+{store:"359 Burnet Reload",region:"Distribution",asset:"753045",cls:"Truck",type:"Tractor TA",lastDate:"05/07/2026",daysSince:97,interval:90,overdue:7,hasOpenWO:true,openWO:680507},
+{store:"359 Burnet Reload",region:"Distribution",asset:"753046",cls:"Truck",type:"Tractor TA",lastDate:"05/07/2026",daysSince:97,interval:90,overdue:7,hasOpenWO:true,openWO:680514},
+{store:"359 Burnet Reload",region:"Distribution",asset:"754045",cls:"Truck",type:"Tractor TA",lastDate:"05/07/2026",daysSince:97,interval:90,overdue:7,hasOpenWO:true,openWO:680504},
+{store:"034 Bryan",region:"Region 01",asset:"241029",cls:"TMFL",type:"Truck Mounted Forklift",lastDate:"03/09/2026",daysSince:156,interval:150,overdue:6,hasOpenWO:true,openWO:685731},
+{store:"034 Bryan",region:"Region 01",asset:"247011",cls:"TMFL",type:"Truck Mounted Forklift",lastDate:"03/09/2026",daysSince:156,interval:150,overdue:6,hasOpenWO:true,openWO:685728},
+{store:"034 Bryan",region:"Region 01",asset:"245027",cls:"TMFL",type:"Truck Mounted Forklift",lastDate:"03/10/2026",daysSince:155,interval:150,overdue:5,hasOpenWO:true,openWO:685729},
+{store:"034 Bryan",region:"Region 01",asset:"247010",cls:"TMFL",type:"Truck Mounted Forklift",lastDate:"03/10/2026",daysSince:155,interval:150,overdue:5,hasOpenWO:true,openWO:685730},
+{store:"115 Midlothian",region:"Region 02",asset:"383118",cls:"Forklift",type:"6K Yard Forklift",lastDate:"03/10/2026",daysSince:155,interval:150,overdue:5,hasOpenWO:true,openWO:670416},
+{store:"024 Pasadena",region:"Region 03",asset:"247007",cls:"TMFL",type:"Truck Mounted Forklift",lastDate:"03/11/2026",daysSince:154,interval:150,overdue:4,hasOpenWO:true,openWO:681899},
+{store:"036 Lufkin",region:"Region 01",asset:"693011",cls:"Truck",type:"20' Slide Flatbed",lastDate:"03/11/2026",daysSince:154,interval:150,overdue:4,hasOpenWO:true,openWO:687943},
+{store:"355 Pharr Reload",region:"Region 05",asset:"749009",cls:"Truck",type:"Tractor TA",lastDate:"03/11/2026",daysSince:154,interval:150,overdue:4,hasOpenWO:true,openWO:687947},
+{store:"113 Montgomery",region:"Region 03",asset:"699022",cls:"Truck",type:"20' Slide Flatbed",lastDate:"05/11/2026",daysSince:93,interval:90,overdue:3,hasOpenWO:true,openWO:688783},
+{store:"117 Liberty Hill",region:"Region 08",asset:"753018",cls:"Truck",type:"24' TA Flatbed",lastDate:"03/12/2026",daysSince:153,interval:150,overdue:3,hasOpenWO:true,openWO:688781},
+{store:"359 Burnet Reload",region:"Distribution",asset:"483002",cls:"Trailer",type:"Flatbed Trailer",lastDate:"03/12/2026",daysSince:153,interval:150,overdue:3,hasOpenWO:true,openWO:688773},
+{store:"359 Burnet Reload",region:"Distribution",asset:"532007",cls:"Trailer",type:"Flatbed Trailer",lastDate:"03/12/2026",daysSince:153,interval:150,overdue:3,hasOpenWO:true,openWO:688776},
+{store:"359 Burnet Reload",region:"Distribution",asset:"532016",cls:"Trailer",type:"Flatbed Trailer",lastDate:"03/12/2026",daysSince:153,interval:150,overdue:3,hasOpenWO:true,openWO:688772},
+{store:"359 Burnet Reload",region:"Distribution",asset:"533009",cls:"Trailer",type:"Flatbed Trailer",lastDate:"03/12/2026",daysSince:153,interval:150,overdue:3,hasOpenWO:true,openWO:688779},
+{store:"016 New Braunfels",region:"Region 07",asset:"486005",cls:"Trailer",type:"Flatbed Trailer",lastDate:"03/13/2026",daysSince:152,interval:150,overdue:2,hasOpenWO:true,openWO:689564},
+{store:"030 San Angelo",region:"Region 06",asset:"244036",cls:"TMFL",type:"Truck Mounted Forklift",lastDate:"03/13/2026",daysSince:152,interval:150,overdue:2,hasOpenWO:true,openWO:689563},
+{store:"038 Rosenberg",region:"Region 03",asset:"243004",cls:"TMFL",type:"Truck Mounted Forklift",lastDate:"03/13/2026",daysSince:152,interval:150,overdue:2,hasOpenWO:true,openWO:689559},
+{store:"049 Tyler",region:"Region 01",asset:"756012",cls:"Truck",type:"24' TA Flatbed",lastDate:"03/13/2026",daysSince:152,interval:150,overdue:2,hasOpenWO:true,openWO:689565},
+{store:"767 Region 7",region:"Region 07",asset:"245038",cls:"TMFL",type:"Truck Mounted Forklift",lastDate:"03/13/2026",daysSince:152,interval:150,overdue:2,hasOpenWO:true,openWO:695727},
+{store:"055 Georgetown",region:"Region 08",asset:"754014",cls:"Truck",type:"24' TA Flatbed",lastDate:"03/13/2026",daysSince:152,interval:150,overdue:2,hasOpenWO:true,openWO:689566},
+{store:"359 Burnet Reload",region:"Distribution",asset:"483001",cls:"Trailer",type:"Flatbed Trailer",lastDate:"03/13/2026",daysSince:152,interval:150,overdue:2,hasOpenWO:true,openWO:688778},
+{store:"359 Burnet Reload",region:"Distribution",asset:"483006",cls:"Trailer",type:"Flatbed Trailer",lastDate:"03/13/2026",daysSince:152,interval:150,overdue:2,hasOpenWO:true,openWO:688771}
+];
+const FLEET={Forklift:484,Truck:399,Trailer:229,TMFL:223,"LD Vehicle":112};
+const TOTAL_FLEET=Object.values(FLEET).reduce((a,b)=>a+b,0);
+const MAXOV=Math.max(...DATA.map(r=>r.overdue));
+const REGION_ORDER=["Region 01","Region 02","Region 03","Region 04","Region 05","Region 06","Region 07","Region 08","Distribution","Millwork","Headquarters"];
+const PRIOR={total:70,crit:1,noWO:7,avg:22,worst:132};
+const RC={"Region 01":"#1B6B2A","Region 02":"#2D8B3E","Region 03":"#D4A017","Region 04":"#3A9E50","Region 05":"#8B6914","Region 06":"#14522A","Region 07":"#6B8E23","Region 08":"#228B22",Distribution:"#5C715C",Headquarters:"#4A7C59",Millwork:"#B8860B"};
+const CC={Truck:"#1B6B2A",Trailer:"#D4A017",TMFL:"#14522A","LD Vehicle":"#6B8E23",Forklift:"#B8860B"};
+const SEV=d=>{if(d>90)return{l:"Critical",c:"#B91C1C",bg:"rgba(185,28,28,0.10)"};if(d>60)return{l:"High",c:"#C2410C",bg:"rgba(194,65,12,0.08)"};if(d>30)return{l:"Medium",c:"#B45309",bg:"rgba(180,83,9,0.08)"};return{l:"Low",c:"#1B6B2A",bg:"rgba(27,107,42,0.08)"}};
+const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML};
+let state={tab:"summary",sortCol:"overdue",sortDir:"desc",search:"",openRegions:{},openStores:{},emailRegion:(REGION_ORDER.find(r=>DATA.some(d=>d.region===r))||""),copyMsg:""};
+function sortRegions(list){return list.sort((a,b)=>REGION_ORDER.indexOf(a.name)-REGION_ORDER.indexOf(b.name))}
+function calcGroup(items){items.sort((a,b)=>b.overdue-a.overdue);const avg=Math.round(items.reduce((s,r)=>s+r.overdue,0)/items.length);return{items,count:items.length,avg,crit:items.filter(r=>r.overdue>90).length,noWO:items.filter(r=>!r.hasOpenWO).length,worst:items[0]?.overdue||0}}
+function getRegions(){const m={};DATA.forEach(r=>{if(!m[r.region])m[r.region]=[];m[r.region].push(r)});return sortRegions(Object.entries(m).map(([n,i])=>({name:n,...calcGroup([...i])})))}
+function getStoresForRegion(rn){const m={};DATA.filter(r=>r.region===rn).forEach(r=>{if(!m[r.store])m[r.store]=[];m[r.store].push(r)});return Object.entries(m).map(([n,i])=>({name:n,...calcGroup([...i])})).sort((a,b)=>b.avg-a.avg)}
+function statHTML(l,v,sub,ac,ic,delta){let dH='';if(delta!==undefined&&delta!==null){const up=delta>0;const flat=delta===0;const arrow=flat?'→':up?'▲':'▼';const dC=flat?'var(--muted)':up?'#B91C1C':'#1B6B2A';const lb=flat?'No change':up?`+${delta} from prior wk`:`${delta} from prior wk`;dH=`<div style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:3px 8px;border-radius:4px;background:${flat?'#E8EDE5':up?'rgba(185,28,28,0.08)':'rgba(27,107,42,0.08)'};font-size:10px;font-weight:700;color:${dC};font-family:'JetBrains Mono',monospace">${arrow} ${lb}</div>`}return`<div class="stat"><div class="icon" style="color:${ac}">${esc(ic)}</div><div class="label">${esc(l)}</div><div class="value" style="color:${ac}">${esc(String(v))}</div>${sub?`<div class="sub">${esc(sub)}</div>`:''}${dH}</div>`}
+function sevBadge(d){const s=SEV(d);return`<span class="sev-badge" style="color:${s.c};background:${s.bg};border:1px solid ${s.c}22">${s.l}</span>`}
+function woBadge(r){return r.hasOpenWO?`<span class="wo-badge" style="color:#1B6B2A"><span class="wo-dot" style="background:#1B6B2A"></span>${r.openWO}</span>`:`<span class="wo-badge" style="color:#B91C1C"><span class="wo-dot" style="background:#B91C1C"></span>NO WO</span>`}
+function miniBar(items){return`<div style="display:flex;gap:1px;align-items:flex-end;height:28px">${items.map(it=>{const hh=Math.max(3,(it.overdue/MAXOV)*26);const s=SEV(it.overdue);return`<div title="${it.asset}: ${it.overdue}d" style="width:5px;height:${hh}px;background:${s.c};border-radius:1.5px;opacity:0.75"></div>`}).join('')}</div>`}
+function dot(color,sz=7){return`<span style="width:${sz}px;height:${sz}px;border-radius:2px;background:${color};display:inline-block"></span>`}
+function filterData(){let d=DATA;if(state.search)d=d.filter(r=>r.asset.includes(state.search)||r.store.toLowerCase().includes(state.search.toLowerCase()));return[...d].sort((a,b)=>{const av=a[state.sortCol],bv=b[state.sortCol];if(typeof av==="string")return state.sortDir==="desc"?bv.localeCompare(av):av.localeCompare(bv);return state.sortDir==="desc"?bv-av:av-bv})}
+function thH(l,col,w,sortable=true){const ac=state.sortCol===col;const ar=ac?(state.sortDir==="desc"?" ↓":" ↑"):"";return`<th class="${sortable?'sortable':''} ${ac?'active':''}" style="width:${w}px" ${sortable?`onclick="handleSort('${col}')"`:''}>${esc(l)}${ar}</th>`}
+function assetTableHTML(data){let hd=thH("Asset","asset",80)+thH("Class","cls",80)+thH("Type","type",130)+thH("Store","store",150)+thH("Last PM","lastDate",85)+thH("Days Since","daysSince",75)+`<th style="width:55px">INTV</th>`+thH("Overdue","overdue",75)+`<th style="width:75px">SEV</th><th style="width:90px">OPEN WO</th><th style="width:90px">SPAN</th>`;const rows=data.map((r,i)=>{const s=SEV(r.overdue);const bw=Math.max(3,(r.overdue/MAXOV)*100);return`<tr style="background:${i%2===0?'transparent':'#F9FAF7'}"><td class="mono" style="font-weight:600;font-size:12px">${esc(r.asset)}</td><td><span style="display:inline-flex;align-items:center;gap:4px">${dot(CC[r.cls]||'#666',6)} ${esc(r.cls)}</span></td><td style="color:var(--muted)">${esc(r.type)}</td><td>${esc(r.store)}</td><td class="mono">${esc(r.lastDate||'')}</td><td class="mono">${r.daysSince}</td><td class="mono" style="color:var(--muted)">${r.interval}d</td><td class="mono" style="font-weight:700;color:${s.c}">${r.overdue}</td><td>${sevBadge(r.overdue)}</td><td>${woBadge(r)}</td><td><div class="bar-track"><div class="bar-fill" style="width:${bw}%;background:${s.c}"></div></div></td></tr>`}).join('');return`<div style="overflow-x:auto"><table><thead><tr>${hd}</tr></thead><tbody>${rows}</tbody></table></div>`}
+function renderSummary(){const crit=DATA.filter(r=>r.overdue>90).length;const noWO=DATA.filter(r=>!r.hasOpenWO).length;const avg=Math.round(DATA.reduce((s,r)=>s+r.overdue,0)/DATA.length);const sevB={Critical:0,High:0,Medium:0,Low:0};DATA.forEach(r=>{sevB[SEV(r.overdue).l]++});const regions=getRegions();let o=`<div class="kpi-strip">${statHTML("Total Overdue",DATA.length,`${(DATA.length/TOTAL_FLEET*100).toFixed(1)}% of fleet`,"#1B6B2A","Σ",DATA.length-PRIOR.total)}${statHTML("Critical (>90d)",crit,`${Math.round(crit/DATA.length*100)}% of overdue`,"#B91C1C","!",crit-PRIOR.crit)}${statHTML("No Open WO",noWO,"Needs WO created","#D4A017","⚠",noWO-PRIOR.noWO)}${statHTML("Avg Days Overdue",avg,`Worst: ${MAXOV} days`,"#C2410C","μ",avg-PRIOR.avg)}</div>`;const sc=[{l:"Critical",c:"#B91C1C"},{l:"High",c:"#C2410C"},{l:"Medium",c:"#B45309"},{l:"Low",c:"#1B6B2A"}];let sb=sc.map(s=>{const p=(sevB[s.l]/DATA.length)*100;return p>0?`<div style="width:${p}%;background:${s.c};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:'JetBrains Mono',monospace" title="${s.l}: ${sevB[s.l]}">${p>8?sevB[s.l]:''}</div>`:''}).join('');let sl=sc.map(s=>`<span style="font-size:10px;color:var(--muted);display:inline-flex;align-items:center;gap:4px">${dot(s.c,8)} ${s.l}: ${sevB[s.l]}</span>`).join('');o+=`<div class="card"><div class="grotesk" style="font-size:12px;font-weight:700;margin-bottom:12px">Severity Distribution</div><div style="display:flex;border-radius:6px;overflow:hidden;height:28px">${sb}</div><div style="display:flex;gap:16px;margin-top:8px">${sl}</div></div>`;const cls=["Truck","Trailer","TMFL","LD Vehicle","Forklift"];let cc=cls.map(c=>{const it=DATA.filter(r=>r.cls===c).sort((a,b)=>b.overdue-a.overdue);if(!it.length)return'';const fl=FLEET[c]||0;const pc=fl?((it.length/fl)*100).toFixed(1):it.length;const ca=Math.round(it.reduce((s,r)=>s+r.overdue,0)/it.length);const cr=it.filter(r=>r.overdue>90).length;return`<div style="background:var(--bg);border-radius:8px;padding:12px 14px;border:1px solid var(--border);border-left:3px solid ${CC[c]}"><div class="flex-between" style="margin-bottom:3px"><span style="font-size:12px;font-weight:700;color:${CC[c]}">${esc(c)}</span><span class="mono" style="font-size:18px;font-weight:800">${fl?pc+'%':pc}</span></div><div class="mono" style="font-size:10px;color:var(--muted);margin-bottom:6px">${it.length} overdue${fl?' of '+fl:''}</div>${miniBar(it)}<div class="flex-between" style="margin-top:6px;font-size:10px;color:var(--muted)"><span>Avg: ${ca}d</span>${cr>0?`<span style="color:#B91C1C;font-weight:600">${cr} critical</span>`:''}</div></div>`}).join('');o+=`<div class="card"><div class="grotesk" style="font-size:12px;font-weight:700;margin-bottom:12px">Overdue by Asset Class</div><div class="grid grid-sm">${cc}</div></div>`;let rc=regions.map(r=>`<div class="region-card" style="border-color:var(--border);border-left-color:${RC[r.name]||'#666'}" onclick="state.tab='regions';state.openRegions={'${r.name}':true};render()"><div class="flex-between" style="margin-bottom:3px"><span style="font-size:12px;font-weight:700;color:${RC[r.name]||'#333'}">${esc(r.name)}</span><span class="mono" style="font-size:18px;font-weight:800">${r.count}</span></div>${miniBar(r.items)}<div class="flex-between" style="margin-top:6px;font-size:10px;color:var(--muted)"><span>Avg: ${r.avg}d</span>${r.noWO>0?`<span style="color:#D4A017;font-weight:600">${r.noWO} no WO</span>`:''}${r.crit>0?`<span style="color:#B91C1C;font-weight:600">${r.crit} crit</span>`:''}</div></div>`).join('');o+=`<div class="card"><div class="grotesk" style="font-size:12px;font-weight:700;margin-bottom:12px">Overdue by Region</div><div class="grid">${rc}</div></div>`;o+=`<div class="card"><div class="flex-between" style="margin-bottom:14px;flex-wrap:wrap;gap:8px"><span class="grotesk" style="font-size:12px;font-weight:700">All Overdue Assets</span><input class="search-input" type="text" placeholder="Search asset # or store..." value="${esc(state.search)}" oninput="state.search=this.value;render()"></div>${assetTableHTML(filterData())}<div class="flex-between" style="margin-top:12px;padding:8px 0;border-top:1px solid var(--border);font-size:11px;color:var(--muted)"><span>Showing ${filterData().length} of ${DATA.length} assets</span><span class="mono">Critical: &gt;90d · High: 61-90d · Medium: 31-60d · Low: 1-30d</span></div></div>`;return o}
+function toggleRegion(name){state.openRegions[name]=!state.openRegions[name];render()}
+function toggleStore(rn,sn){const key=rn+'|'+sn;state.openStores[key]=!state.openStores[key];render()}
+function renderRegions(){const regions=getRegions();const nw=DATA.filter(r=>!r.hasOpenWO).length;const avg=Math.round(DATA.reduce((s,r)=>s+r.overdue,0)/DATA.length);let o=`<div class="kpi-strip">${statHTML("Total Overdue",DATA.length,`${(DATA.length/TOTAL_FLEET*100).toFixed(1)}% of fleet`,"#1B6B2A","Σ")}${statHTML("Regions",regions.length,"With overdue assets","#14522A","◆")}${statHTML("No Open WO",nw,"Needs WO created","#D4A017","⚠")}${statHTML("Avg Overdue",avg,`Worst: ${MAXOV}d`,"#C2410C","μ")}</div>`;regions.forEach(r=>{const isOpen=!!state.openRegions[r.name];const stores=getStoresForRegion(r.name);let storeContent='';if(isOpen){stores.forEach(s=>{const sk=r.name+'|'+s.name;const sOpen=!!state.openStores[sk];const statsRow=`<span class="mono" style="font-size:11px;display:flex;gap:12px;align-items:center"><span style="font-weight:700">${s.count} asset${s.count>1?'s':''}</span><span style="color:var(--muted)">Avg: ${s.avg}d</span>${s.crit>0?`<span style="color:#B91C1C;font-weight:600">${s.crit} crit</span>`:''}${s.noWO>0?`<span style="color:#D4A017;font-weight:600">${s.noWO} no WO</span>`:''}</span>`;storeContent+=`<div class="store-row" onclick="event.stopPropagation();toggleStore('${r.name}','${s.name.replace(/'/g,"\\'")}')"><div style="display:flex;align-items:center;gap:8px"><span class="accordion-arrow ${sOpen?'open':''}">▾</span><span style="font-weight:600;font-size:12px">${esc(s.name)}</span></div>${statsRow}</div>`;if(sOpen){storeContent+=`<div class="store-assets">${assetTableHTML(s.items)}</div>`}})}const regionStats=`<span class="mono" style="font-size:11px;display:flex;gap:14px;align-items:center"><span style="font-weight:800;font-size:16px">${r.count}</span><span style="color:var(--muted)">Avg: ${r.avg}d</span>${r.crit>0?`<span style="color:#B91C1C;font-weight:600">${r.crit} crit</span>`:''}${r.noWO>0?`<span style="color:#D4A017;font-weight:600">${r.noWO} no WO</span>`:''}<span style="color:var(--muted)">${stores.length} store${stores.length>1?'s':''}</span><button class="btn-download" style="padding:4px 10px;font-size:10px" onclick="event.stopPropagation();goToEmailForRegion('${r.name.replace(/'/g,"\\'")}')">✉ Draft Email</button></span>`;o+=`<div class="accordion"><div class="accordion-head" onclick="toggleRegion('${r.name}')"><div style="display:flex;align-items:center;gap:10px"><span class="accordion-arrow ${isOpen?'open':''}">▾</span>${dot(RC[r.name]||'#666',10)}<span class="grotesk" style="font-size:14px;font-weight:700;color:${RC[r.name]||'var(--fg)'}">${esc(r.name)}</span></div>${regionStats}</div>${isOpen?`<div class="accordion-body">${storeContent}</div>`:''}</div>`});return o}
+function assetLabel(r){return `${r.store} — Asset ${r.asset} (${r.cls}, ${r.type})`}
+function generateEmail(regionName){
+  const items=DATA.filter(r=>r.region===regionName).sort((a,b)=>b.overdue-a.overdue);
+  const critical=items.filter(r=>r.overdue>90);
+  const other=items.filter(r=>r.overdue<=90);
+  const noWO=items.filter(r=>!r.hasOpenWO);
+  const dateStr=new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
+  const lines=[];
+  lines.push(`${regionName} Team,`);
+  lines.push(``);
+  lines.push(`Below is the current PM compliance status for fleet assets in ${regionName} as of ${dateStr}. Please review and take action to bring these assets current on preventive maintenance, acting immediately and scheduling service with your vendor is the most effective way to prevent minor issues from developing into long-term unit downtime.`);
+  lines.push(``);
 
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-    </button>
-    <div class="topbar-logo">McCoy's <span>Report Hub</span></div>
-    <div class="topbar-divider"></div>
-    <div class="topbar-label" id="topbar-label">Hot Items</div>
-    <div class="search-wrap">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="text" id="search-input" placeholder="Search reports…" autocomplete="off" />
+  lines.push(`CRITICAL — OVER 90 DAYS OVERDUE (${critical.length})`);
+  lines.push(`-`.repeat(45));
+  if(critical.length){
+    critical.forEach(r=>{
+      lines.push(`- ${assetLabel(r)} — ${r.overdue}d overdue (last PM ${r.lastDate}) — ${r.hasOpenWO?'WO '+r.openWO:'NO WO ON FILE'}`);
+    });
+  } else {
+    lines.push(`No critical assets (>90 days overdue) in this region. Nice work!`);
+  }
+  lines.push(``);
+
+  lines.push(`OTHER OVERDUE ASSETS (${other.length})`);
+  lines.push(`-`.repeat(45));
+  if(other.length){
+    other.forEach(r=>{
+      lines.push(`- ${assetLabel(r)} — ${r.overdue}d overdue (last PM ${r.lastDate}) — ${r.hasOpenWO?'WO '+r.openWO:'NO WO ON FILE'}`);
+    });
+  } else {
+    lines.push(`No other overdue assets in this region.`);
+  }
+  lines.push(``);
+
+  lines.push(`ASSETS WITHOUT AN OPEN WORK ORDER — PLEASE CREATE (${noWO.length})`);
+  lines.push(`-`.repeat(45));
+  if(noWO.length){
+    noWO.forEach(r=>{
+      lines.push(`- ${assetLabel(r)} — ${r.overdue}d overdue, no WO on file`);
+    });
+  } else {
+    lines.push(`All overdue assets in this region have an open work order.`);
+  }
+  lines.push(``);
+  lines.push(`If you have questions about any of the assets listed above, please reach out to the Fleet Department.`);
+  lines.push(``);
+  lines.push(`Thank you,`);
+  lines.push(`Fleet Department`);
+
+  const subject=`Fleet PM Compliance — Action Needed — ${regionName} — ${dateStr}`;
+  const body=lines.join('\n');
+  return{subject,body,items,critical,other,noWO};
+}
+async function copyToClipboard(text,label){
+  try{
+    await navigator.clipboard.writeText(text);
+  }catch(e){
+    const ta=document.createElement('textarea');
+    ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');}catch(err){}
+    document.body.removeChild(ta);
+  }
+  state.copyMsg=`${label} copied to clipboard`;
+  render();
+  setTimeout(()=>{state.copyMsg="";render();},2200);
+}
+function copyEmailSubject(){const {subject}=generateEmail(state.emailRegion);copyToClipboard(subject,'Subject')}
+function copyEmailBody(){const {body}=generateEmail(state.emailRegion);copyToClipboard(body,'Email body')}
+function copyEmailAll(){const {subject,body}=generateEmail(state.emailRegion);copyToClipboard(`Subject: ${subject}\n\n${body}`,'Subject + body')}
+function setEmailRegion(name){state.emailRegion=name;render()}
+function goToEmailForRegion(name){state.tab='emails';state.emailRegion=name;render()}
+function renderEmails(){
+  const regions=REGION_ORDER.filter(r=>DATA.some(d=>d.region===r));
+  if(!regions.length)return `<div class="card"><div class="empty-state"><div class="big">✓</div>No overdue assets to report on.</div></div>`;
+  if(!regions.includes(state.emailRegion))state.emailRegion=regions[0];
+  const {subject,body,items,critical,noWO}=generateEmail(state.emailRegion);
+  let o=`<div class="card">
+    <div class="grotesk" style="font-size:13px;font-weight:700;margin-bottom:12px">Generate Regional Manager Email</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-bottom:4px">
+      <div>
+        <div class="mono" style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Region</div>
+        <select class="store-select" style="width:220px" onchange="setEmailRegion(this.value)">
+          ${regions.map(r=>`<option value="${esc(r)}" ${state.emailRegion===r?'selected':''}>${esc(r)}</option>`).join('')}
+        </select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-download" onclick="copyEmailAll()">⬇ Copy Subject + Body</button>
+        <button class="btn-download" onclick="copyEmailSubject()">Copy Subject</button>
+        <button class="btn-download" onclick="copyEmailBody()">Copy Body</button>
+      </div>
+      ${state.copyMsg?`<span class="mono" style="font-size:11px;color:var(--accent);font-weight:700">✓ ${esc(state.copyMsg)}</span>`:''}
     </div>
-  </header>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px">${items.length} overdue asset${items.length!==1?'s':''} in ${esc(state.emailRegion)} · ${critical.length} critical (&gt;90d) · ${noWO.length} without an open WO</div>
+  </div>`;
 
-  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-
-  <div class="body-wrap">
-
-    <!-- SIDEBAR -->
-    <nav class="sidebar" id="sidebar">
-      <div class="sidebar-stats">
-        <div class="stat-box"><strong>24</strong><span>Reports</span></div>
-        <div class="stat-box"><strong>6</strong><span>Categories</span></div>
-        <div class="stat-box"><strong>7</strong><span>Weekly</span></div>
-        <div class="stat-box"><strong>5</strong><span>Monthly</span></div>
-      </div>
-
-      <div class="nav-label">Report Categories</div>
-
-      <button class="nav-btn active" data-tab="hot-items">
-        <span class="nav-icon">🔥</span>
-        Hot Items
-        <span class="nav-count">1</span>
-      </button>
-
-      <button class="nav-btn" data-tab="fleet-efficiency">
-        <span class="nav-icon">🚛</span>
-        Fleet Efficiency
-        <span class="nav-count">5</span>
-      </button>
-
-      <button class="nav-btn" data-tab="fleet-maintenance">
-        <span class="nav-icon">🔧</span>
-        Fleet Maintenance
-        <span class="nav-count">4</span>
-      </button>
-
-      <button class="nav-btn" data-tab="facilities-operations">
-        <span class="nav-icon">🏢</span>
-        Facilities Operations
-        <span class="nav-count">4</span>
-      </button>
-
-      <button class="nav-btn" data-tab="budgeting-and-forecasting">
-        <span class="nav-icon">📊</span>
-        Budgeting &amp; Forecasting
-        <span class="nav-count">3</span>
-      </button>
-
-      <button class="nav-btn" data-tab="capital-projects">
-        <span class="nav-icon">🏗️</span>
-        Capital Projects
-        <span class="nav-count">5</span>
-      </button>
-
-      <div class="sidebar-footer">
-        Store Development &amp; Fleet Report Hub<br>
-        Links open in a new tab
-      </div>
-    </nav>
-
-    <!-- CONTENT -->
-    <main class="content">
-
-      <!-- SEARCH RESULTS PANEL -->
-      <section id="all-search-results" class="tab-panel">
-        <div class="panel-header">
-          <div>
-            <h2>Search Results</h2>
-            <p id="search-result-count"></p>
-          </div>
-        </div>
-        <div class="report-grid" id="search-grid"></div>
-        <div id="empty-state">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <p>No reports matched your search.</p>
-        </div>
-      </section>
-
-      <!-- HOT ITEMS -->
-      <section id="hot-items" class="tab-panel active">
-        <div class="panel-header">
-          <div>
-            <div class="panel-eyebrow"><span class="category-dot" style="background:#c47f00;"></span><span class="category-label" style="color:#c47f00;">Hot Items</span></div>
-            <h2>Hot Items</h2>
-            <p>Priority issues and escalated items requiring immediate attention.</p>
-          </div>
-          <span class="report-count-badge">1 report</span>
-        </div>
-        <div class="report-grid">
-
-          <article class="report-card" data-title="hot issues tracker">
-            <div class="card-pills">
-              <span class="pill" style="background:#e8f5e9;color:#1b5e20;border:1px solid rgba(27,94,32,.15);font-size:11px;font-weight:700;letter-spacing:.03em;padding:4px 10px;border-radius:999px;">🟢 Live</span>
-              <span class="pill" style="background:#fff8e1;color:#7a5000;border:1px solid rgba(196,127,0,0.25);font-size:11px;font-weight:700;letter-spacing:.03em;padding:4px 10px;border-radius:999px;">🔥 High Priority</span>
-            </div>
-            <h3>Hot Issues Tracker</h3>
-            <p>Tracks high-priority operational issues across departments, surfacing escalated items that require immediate follow-up and resolution.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Hot-Issues-Tracker/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-        </div>
-      </section>
-
-      <!-- FLEET EFFICIENCY -->
-      <section id="fleet-efficiency" class="tab-panel">
-        <div class="panel-header">
-          <div>
-            <div class="panel-eyebrow"><span class="category-dot"></span><span class="category-label">Fleet Efficiency</span></div>
-            <h2>Fleet Efficiency</h2>
-            <p>Utilization analysis and cost-per-mile benchmarking across fleet assets.</p>
-          </div>
-          <span class="report-count-badge">5 reports</span>
-        </div>
-        <div class="report-grid">
-
-          <article class="report-card" data-title="forklift utilization report">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 7/24/2026</span>
-              <span class="pill pill-cadence">Monthly Update</span>
-            </div>
-            <h3>Forklift Utilization Report</h3>
-            <p>Analyzes forklift utilization across locations, identifying underutilized assets and opportunities for redeployment, reduction, or lifecycle optimization.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Forklift-Utilization-Report/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="truck utilization">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 7/27/2026</span>
-              <span class="pill pill-cadence">Monthly Update</span>
-            </div>
-            <h3>Truck Utilization</h3>
-            <p>Evaluates truck utilization across routes and locations using deliveries, miles, and time metrics to identify inefficiencies and optimization opportunities.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Fleet-Utilization-TWRE/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="distribution forklift utilization">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 6/2/2026</span>
-              <span class="pill pill-cadence">Monthly Update</span>
-            </div>
-            <h3>Distribution Forklift Utilization</h3>
-            <p>Analyzes distribution forklift utilization across locations, identifying underutilized assets and opportunities for redeployment, reduction, or lifecycle optimization.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Distribution-Forklift-Utilization-/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="distribution cpm analysis">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 5/29/2026</span>
-              <span class="pill pill-cadence">Monthly Update</span>
-            </div>
-            <h3>Distribution CPM Analysis</h3>
-            <p>Tracks the 3-year cost-per-mile trends across all three Distribution facilities, providing monthly benchmarking data to evaluate internal fleet performance against 3PL alternatives.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Distribution-CPM/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="distribution spend by category">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 6/4/2026</span>
-              <span class="pill pill-cadence">Monthly Update</span>
-            </div>
-            <h3>Distribution Spend By Category</h3>
-            <p>Covers two main areas: Fleet Overview — overall subcontractor spend, category breakdown, fuel (WEX/Fill Rite), and work order data sourced from Fexa, going back to 2023. Asset Details — individual asset performance under the location tab, covering the full life of each asset.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Distribution-Fleet-Spend-By-Category/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-        </div>
-      </section>
-
-      <!-- FLEET MAINTENANCE -->
-      <section id="fleet-maintenance" class="tab-panel">
-        <div class="panel-header">
-          <div>
-            <div class="panel-eyebrow"><span class="category-dot"></span><span class="category-label">Fleet Maintenance</span></div>
-            <h2>Fleet Maintenance</h2>
-            <p>Work order follow-up, PM compliance, and spend tracking.</p>
-          </div>
-          <span class="report-count-badge">4 reports</span>
-        </div>
-        <div class="report-grid">
-
-          <article class="report-card" data-title="fleet work order follow-up">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 8/11/2026</span>
-              <span class="pill pill-cadence">Weekly Update</span>
-            </div>
-            <h3>Fleet Work Order Follow-Up</h3>
-            <p>Tracks open fleet work orders by age and status, flagging overdue items and follow-up actions needed to keep maintenance on schedule.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Fleet-WO-Follow-Up/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="pm compliance dashboard">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 8/12/2026</span>
-              <span class="pill pill-cadence">Weekly Update</span>
-            </div>
-            <h3>PM Compliance Dashboard</h3>
-            <p>Monitors preventive maintenance compliance rates across the fleet, identifying locations and asset types falling behind on scheduled service intervals.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/PM-Compliance-Dashboard/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="fleet spend yoy report">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 7/27/2026</span>
-              <span class="pill pill-cadence">Monthly Update</span>
-            </div>
-            <h3>Fleet Spend YOY Report</h3>
-            <p>Tracks year-over-year fleet spend trends, highlighting changes in maintenance, parts, and operating costs.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Fleet-Spend-Report-YOY/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="fleet registration and inspections">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 8/12/2026</span>
-              <span class="pill pill-cadence">Weekly Update</span>
-            </div>
-            <h3>Fleet Registration and Inspections</h3>
-            <p>Tracks fleet vehicle registration and inspection status across locations, flagging upcoming renewals and overdue items to keep the fleet compliant.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Fleet-Registration-and-Inspection/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-        </div>
-      </section>
-
-      <!-- FACILITIES OPERATIONS -->
-      <section id="facilities-operations" class="tab-panel">
-        <div class="panel-header">
-          <div>
-            <div class="panel-eyebrow"><span class="category-dot"></span><span class="category-label">Facilities Operations</span></div>
-            <h2>Facilities Operations</h2>
-            <p>Work order tracking, facilities spend analysis, and provider references.</p>
-          </div>
-          <span class="report-count-badge">4 reports</span>
-        </div>
-        <div class="report-grid">
-          <article class="report-card" data-title="facilities work order follow-up">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 8/11/2026</span>
-              <span class="pill pill-cadence">Weekly Update</span>
-            </div>
-            <h3>Facilities Work Order Follow-Up</h3>
-            <p>Tracks facilities work order aging, follow-up activity, and missed actions to support timely resolution across locations.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Facilities-WO-Follow-Up-Report/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-          <article class="report-card" data-title="facilities spend dashboard">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 8/4/2026</span>
-              <span class="pill pill-cadence">Monthly Update</span>
-            </div>
-            <h3>Facilities Spend Dashboard</h3>
-            <p>Provides a comprehensive view of facilities-related spend across locations, tracking costs by category to identify trends and control expenditures.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Facility-Spend-Dashboard/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-          <article class="report-card" data-title="electrical provider search">
-            <div class="card-pills">
-              <span class="pill pill-status">Current</span>
-              <span class="pill pill-cadence">Reference</span>
-            </div>
-            <h3>Electrical Provider Search</h3>
-            <p>Lists electrical provider, ESID number, and outage hotline for each location — a quick reference for facilities teams managing outages and provider contacts.</p>
-            <a class="report-link" href="https://smccormick50.github.io/Copy-of-Electricity-Provider-/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-          <article class="report-card" data-title="racking inventory management">
-            <div class="card-pills">
-              <span class="pill pill-status">Current</span>
-              <span class="pill pill-cadence">Reference</span>
-            </div>
-            <h3>Racking Inventory Management</h3>
-            <p>Manages racking inventory for racking repairs performed by internal teams.</p>
-            <a class="report-link" href="https://smccormick50.github.io/McCoy-Racking-/login.html" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-        </div>
-      </section>
-
-      <!-- BUDGETING & FORECASTING -->
-      <section id="budgeting-and-forecasting" class="tab-panel">
-        <div class="panel-header">
-          <div>
-            <div class="panel-eyebrow"><span class="category-dot"></span><span class="category-label">Budgeting &amp; Forecasting</span></div>
-            <h2>Budgeting &amp; Forecasting</h2>
-            <p>Fuel trends, spend proposals, and fleet lifecycle planning.</p>
-          </div>
-          <span class="report-count-badge">3 reports</span>
-        </div>
-        <div class="report-grid">
-
-          <article class="report-card" data-title="mtd fuel trends">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 8/12/2026</span>
-              <span class="pill pill-cadence">Monthly Update</span>
-            </div>
-            <h3>MTD Fuel Trends</h3>
-            <p>Monitors month-to-date fuel consumption and cost trends across the fleet, surfacing anomalies and location-level variances to support budget management.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/MTD-Fuel-Trends/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="additional spend proposal">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 6/9/2026</span>
-              <span class="pill pill-cadence">Strategic Analysis</span>
-            </div>
-            <h3>Additional Spend Proposal</h3>
-            <p>Evaluates fleet replacement opportunities by modeling emissions impact, revenue implications, and pricing scenarios to support capital allocation decisions.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Fleet-Replacement-Opportunity---Emissions-REV-Pricing/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="fleet lifecycle budget planning">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 6/10/2026</span>
-              <span class="pill pill-cadence">Quarterly Update</span>
-            </div>
-            <h3>Fleet Lifecycle &amp; Budget Planning</h3>
-            <p>Supports long-range fleet planning by tracking asset age, replacement timelines, and projected capital needs to guide budget strategy and procurement decisions.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Fleet-Lifecycle-Budget/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-        </div>
-      </section>
-
-      <!-- CAPITAL PROJECTS -->
-      <section id="capital-projects" class="tab-panel">
-        <div class="panel-header">
-          <div>
-            <div class="panel-eyebrow"><span class="category-dot"></span><span class="category-label">Capital Projects</span></div>
-            <h2>Capital Projects</h2>
-            <p>Project tracking and progress summaries.</p>
-          </div>
-          <span class="report-count-badge">5 reports</span>
-        </div>
-        <div class="report-grid">
-
-          <article class="report-card" data-title="project summary and progress">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 8/5/2026</span>
-              <span class="pill pill-cadence">Weekly Update</span>
-            </div>
-            <h3>Project Summary &amp; Progress</h3>
-            <p>Provides a consolidated view of active capital projects, tracking milestones, budget status, and completion timelines to support leadership oversight.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Project-Summary-Progress/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="distribution construction spend">
-            <div class="card-pills">
-              <span class="pill pill-status">Current</span>
-              <span class="pill pill-cadence">Reference</span>
-            </div>
-            <h3>Distribution Construction Spend</h3>
-            <p>Tracks construction-related spend for Distribution capital projects, providing visibility into costs by project and category to support budget oversight.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Distribution-Construction-/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="canyon lake schedule">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 8/4/2026</span>
-              <span class="pill pill-cadence">Weekly Update</span>
-            </div>
-            <h3>Canyon Lake Schedule</h3>
-            <p>Tracks the project schedule and milestone timeline for the Canyon Lake capital project, supporting on-time delivery and progress oversight.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Canyon-Lake-Schedule-V2/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="new store cashflow">
-            <div class="card-pills">
-              <span class="pill pill-status">Current</span>
-              <span class="pill pill-cadence">Reference</span>
-            </div>
-            <h3>New Store Cashflow</h3>
-            <p>Provides cashflow reference data for new store capital projects to support planning and financial oversight.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/New-Store-Cashflow/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-          <article class="report-card" data-title="reno schedule">
-            <div class="card-pills">
-              <span class="pill pill-status">Updated 8/11/2026</span>
-              <span class="pill pill-cadence">Reference</span>
-            </div>
-            <h3>Reno Schedule</h3>
-            <p>Provides a tentative schedule reference for the Reno 123 capital project, supporting planning and timeline visibility.</p>
-            <a class="report-link" href="https://julianchetlange-svg.github.io/Reno-123-Tentative-Schedule/" target="_blank" rel="noopener noreferrer">
-              Open Report
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </article>
-
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <button class="fab" onclick="toggleSidebar()">☰ Menu</button>
-
-  <script>
-    const navBtns     = document.querySelectorAll('.nav-btn');
-    const panels      = document.querySelectorAll('.tab-panel');
-    const searchInput = document.getElementById('search-input');
-    const topbarLabel = document.getElementById('topbar-label');
-    let   currentTab  = 'hot-items';
-
-    const allReports = [
-      { title: 'Hot Issues Tracker',               desc: 'Tracks high-priority operational issues across departments, surfacing escalated items that require immediate follow-up and resolution.',                        cadence: 'High Priority',      href: 'https://julianchetlange-svg.github.io/Hot-Issues-Tracker/',                                          tab: 'hot-items' },
-      { title: 'Forklift Utilization Report',       desc: 'Analyzes forklift utilization across locations, identifying underutilized assets and opportunities for redeployment, reduction, or lifecycle optimization.', cadence: 'Monthly Update',     href: 'https://julianchetlange-svg.github.io/Forklift-Utilization-Report/',                               tab: 'fleet-efficiency' },
-      { title: 'Truck Utilization',                 desc: 'Evaluates truck utilization across routes and locations using deliveries, miles, and time metrics to identify inefficiencies and optimization opportunities.', cadence: 'Monthly Update',    href: 'https://julianchetlange-svg.github.io/Fleet-Utilization-TWRE/',                                    tab: 'fleet-efficiency' },
-      { title: 'Distribution Spend By Category',     desc: 'Covers two main areas: Fleet Overview — overall subcontractor spend, category breakdown, fuel (WEX/Fill Rite), and work order data sourced from Fexa, going back to 2023. Asset Details — individual asset performance under the location tab, covering the full life of each asset.', cadence: 'Monthly Update', href: 'https://julianchetlange-svg.github.io/Distribution-Fleet-Spend-By-Category/', tab: 'fleet-efficiency' },
-      { title: 'Distribution Forklift Utilization', desc: 'Analyzes distribution forklift utilization across locations, identifying underutilized assets and opportunities for redeployment, reduction, or lifecycle optimization.', cadence: 'Monthly Update', href: 'https://julianchetlange-svg.github.io/Distribution-Forklift-Utilization-/', tab: 'fleet-efficiency' },
-      { title: 'Distribution CPM Analysis',         desc: 'Tracks the 3-year cost-per-mile trends across all three Distribution facilities, providing monthly benchmarking data to evaluate internal fleet performance against 3PL alternatives.', cadence: 'Monthly Update', href: 'https://julianchetlange-svg.github.io/Distribution-CPM/',             tab: 'fleet-efficiency' },
-      { title: 'Fleet Work Order Follow-Up',        desc: 'Tracks open fleet work orders by age and status, flagging overdue items and follow-up actions needed to keep maintenance on schedule.',                       cadence: 'Weekly Update',      href: 'https://julianchetlange-svg.github.io/Fleet-WO-Follow-Up/',                                  tab: 'fleet-maintenance' },
-      { title: 'PM Compliance Dashboard',           desc: 'Monitors preventive maintenance compliance rates across the fleet, identifying locations and asset types falling behind on scheduled service intervals.',     cadence: 'Weekly Update',      href: 'https://julianchetlange-svg.github.io/PM-Compliance-Dashboard/',                                    tab: 'fleet-maintenance' },
-      { title: 'Fleet Spend YOY Report',            desc: 'Tracks year-over-year fleet spend trends, highlighting changes in maintenance, parts, and operating costs.',                                                 cadence: 'Monthly Update',     href: 'https://julianchetlange-svg.github.io/Fleet-Spend-Report-YOY/',                                    tab: 'fleet-maintenance' },
-      { title: 'Fleet Registration and Inspections', desc: 'Tracks fleet vehicle registration and inspection status across locations, flagging upcoming renewals and overdue items to keep the fleet compliant.', cadence: 'Weekly Update', href: 'https://julianchetlange-svg.github.io/Fleet-Registration-and-Inspection/', tab: 'fleet-maintenance' },
-      { title: 'Racking Inventory Management',       desc: 'Manages racking inventory for racking repairs performed by internal teams.', cadence: 'Reference', href: 'https://smccormick50.github.io/McCoy-Racking-/login.html', tab: 'facilities-operations' },
-      { title: 'Electrical Provider Search',         desc: 'Lists electrical provider, ESID number, and outage hotline for each location — a quick reference for facilities teams managing outages and provider contacts.', cadence: 'Reference', href: 'https://smccormick50.github.io/Copy-of-Electricity-Provider-/', tab: 'facilities-operations' },
-      { title: 'Facilities Work Order Follow-Up',   desc: 'Tracks facilities work order aging, follow-up activity, and missed actions to support timely resolution across locations.',                                  cadence: 'Weekly Update',      href: 'https://julianchetlange-svg.github.io/Facilities-WO-Follow-Up-Report/',                              tab: 'facilities-operations' },
-      { title: 'Facilities Spend Dashboard',        desc: 'Provides a comprehensive view of facilities-related spend across locations, tracking costs by category to identify trends and control expenditures.',        cadence: 'Monthly Update',     href: 'https://julianchetlange-svg.github.io/Facility-Spend-Dashboard/',                                  tab: 'facilities-operations' },
-      { title: 'MTD Fuel Trends',                   desc: 'Monitors month-to-date fuel consumption and cost trends across the fleet, surfacing anomalies and location-level variances to support budget management.',  cadence: 'Monthly Update',     href: 'https://julianchetlange-svg.github.io/MTD-Fuel-Trends/',                                            tab: 'budgeting-and-forecasting' },
-      { title: 'Additional Spend Proposal',         desc: 'Evaluates fleet replacement opportunities by modeling emissions impact, revenue implications, and pricing scenarios to support capital allocation decisions.', cadence: 'Strategic Analysis', href: 'https://julianchetlange-svg.github.io/Fleet-Replacement-Opportunity---Emissions-REV-Pricing/', tab: 'budgeting-and-forecasting' },
-      { title: 'Fleet Lifecycle & Budget Planning', desc: 'Supports long-range fleet planning by tracking asset age, replacement timelines, and projected capital needs to guide budget strategy and procurement decisions.', cadence: 'Quarterly Update', href: 'https://julianchetlange-svg.github.io/Fleet-Lifecycle-Budget/',                             tab: 'budgeting-and-forecasting' },
-      { title: 'Project Summary & Progress',        desc: 'Provides a consolidated view of active capital projects, tracking milestones, budget status, and completion timelines to support leadership oversight.',      cadence: 'Weekly Update',      href: 'https://julianchetlange-svg.github.io/Project-Summary-Progress/',                                   tab: 'capital-projects' },
-      { title: 'Distribution Construction Spend',   desc: 'Tracks construction-related spend for Distribution capital projects, providing visibility into costs by project and category to support budget oversight.', cadence: 'Reference', href: 'https://julianchetlange-svg.github.io/Distribution-Construction-/', tab: 'capital-projects' },
-      { title: 'Canyon Lake Schedule',               desc: 'Tracks the project schedule and milestone timeline for the Canyon Lake capital project, supporting on-time delivery and progress oversight.', cadence: 'Weekly Update', href: 'https://julianchetlange-svg.github.io/Canyon-Lake-Schedule-V2/', tab: 'capital-projects' },
-      { title: 'New Store Cashflow',                 desc: 'Provides cashflow reference data for new store capital projects to support planning and financial oversight.', cadence: 'Reference', href: 'https://julianchetlange-svg.github.io/New-Store-Cashflow/', tab: 'capital-projects' },
-      { title: 'Reno Schedule',                      desc: 'Provides a tentative schedule reference for the Reno 123 capital project, supporting planning and timeline visibility.', cadence: 'Reference', href: 'https://julianchetlange-svg.github.io/Reno-123-Tentative-Schedule/', tab: 'capital-projects' },
-    ];
-
-    function switchTab(tab) {
-      currentTab = tab;
-      navBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-      panels.forEach(p => p.classList.toggle('active', p.id === tab));
-      const activeBtn = document.querySelector(`.nav-btn[data-tab="${tab}"]`);
-      if (activeBtn) topbarLabel.textContent = activeBtn.textContent.replace(/\d+/, '').trim();
-    }
-
-    navBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        searchInput.value = '';
-        switchTab(btn.dataset.tab);
-        closeSidebar();
-      });
-    });
-
-    const arrowSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
-
-    function makeCard(r) {
-      return `
-        <article class="report-card" data-title="${r.title.toLowerCase()}">
-          <div class="card-pills">
-            <span class="pill pill-status">Current</span>
-            <span class="pill pill-cadence">${r.cadence}</span>
-          </div>
-          <h3>${r.title}</h3>
-          <p>${r.desc}</p>
-          <a class="report-link" href="${r.href}" target="_blank" rel="noopener noreferrer">Open Report ${arrowSVG}</a>
-        </article>`;
-    }
-
-    searchInput.addEventListener('input', () => {
-      const q = searchInput.value.trim().toLowerCase();
-      if (!q) { switchTab(currentTab); return; }
-
-      navBtns.forEach(b => b.classList.remove('active'));
-      panels.forEach(p => p.classList.toggle('active', p.id === 'all-search-results'));
-      topbarLabel.textContent = `Search: "${searchInput.value}"`;
-
-      const results = allReports.filter(r =>
-        r.title.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q) || r.cadence.toLowerCase().includes(q)
-      );
-
-      const grid  = document.getElementById('search-grid');
-      const empty = document.getElementById('empty-state');
-      const count = document.getElementById('search-result-count');
-
-      if (results.length === 0) {
-        grid.innerHTML = '';
-        empty.style.display = 'block';
-        count.textContent = 'No reports matched your query.';
-      } else {
-        grid.innerHTML = results.map(makeCard).join('');
-        empty.style.display = 'none';
-        count.textContent = `${results.length} report${results.length !== 1 ? 's' : ''} found`;
-      }
-    });
-
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('open');
-      document.getElementById('overlay').classList.toggle('open');
-    }
-    function closeSidebar() {
-      document.getElementById('sidebar').classList.remove('open');
-      document.getElementById('overlay').classList.remove('open');
-    }
-  </script>
+  o+=`<div class="card">
+    <div class="mono" style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Subject</div>
+    <div class="mono" style="font-size:13px;font-weight:700;margin-bottom:16px;padding:10px 12px;background:var(--bg);border-radius:6px;border:1px solid var(--border)">${esc(subject)}</div>
+    <div class="mono" style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Body — ready to paste into Outlook</div>
+    <pre style="white-space:pre-wrap;word-break:break-word;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:16px;margin:0;max-height:520px;overflow-y:auto">${esc(body)}</pre>
+  </div>`;
+  return o;
+}
+function handleSort(col){if(state.sortCol===col)state.sortDir=state.sortDir==="desc"?"asc":"desc";else{state.sortCol=col;state.sortDir="desc"}render()}
+function switchTab(tab){state.tab=tab;state.search="";state.sortCol="overdue";state.sortDir="desc";if(tab!=="regions"){state.openRegions={};state.openStores={}}render()}
+function render(){const now=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});const tabs=[{id:"summary",l:"Summary"},{id:"regions",l:"Region / Store"},{id:"emails",l:"Email Drafts"}];let tb=tabs.map(t=>`<button class="tab-btn ${state.tab===t.id?'active':''}" onclick="switchTab('${t.id}')">${t.l}</button>`).join('');let content=state.tab==="summary"?renderSummary():state.tab==="regions"?renderRegions():renderEmails();document.getElementById('app').innerHTML=`<div class="header-bar"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><span class="live-dot"></span><span class="mono" style="font-size:11px;color:var(--yellow);font-weight:700;letter-spacing:1.5px;text-transform:uppercase">OVERDUE ASSETS — LIVE</span></div><h1>PM Compliance Dashboard</h1><p class="sub">McCoy's Building Supply · Fleet Preventive Maintenance · ${DATA.length} overdue of ${TOTAL_FLEET.toLocaleString()} assets (${(DATA.length/TOTAL_FLEET*100).toFixed(1)}%)</p></div><div class="date"><div>Report generated</div><strong>${now}</strong></div></div><div class="accent-stripe"></div><div class="tab-bar">${tb}</div>${content}`}
+render();
+</script>
 </body>
 </html>
