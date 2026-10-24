@@ -35,7 +35,8 @@
       padding: 0 24px; height: 60px;
       box-shadow: 0 2px 8px rgba(0,0,0,.18);
     }
-    .topbar-logo { font-family: 'DM Serif Display', serif; font-size: 20px; letter-spacing: .02em; white-space: nowrap; }
+    .topbar-logo { font-family: 'DM Serif Display', serif; font-size: 20px; letter-spacing: .02em; white-space: nowrap; display: flex; align-items: center; gap: 12px; }
+    .topbar-logo img { height: 42px; width: auto; display: block; border-radius: 4px; }
     .topbar-logo span { color: var(--gold); }
     .topbar-divider { width: 1px; height: 28px; background: rgba(255,255,255,.3); }
     .topbar-label { font-size: 14px; font-weight: 600; opacity: .85; flex: 1; }
@@ -173,6 +174,7 @@
       .content { padding: 20px; }
       .hamburger { display: flex; }
       .topbar-label { display: none; }
+      .topbar-logo img { height: 34px; }
       #search-input { width: 160px; }
       .fab {
         display: flex; position: fixed; bottom: 20px; right: 20px; z-index: 150;
@@ -190,7 +192,7 @@
     <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
     </button>
-    <div class="topbar-logo">McCoy's <span>Report Hub</span></div>
+    <div class="topbar-logo"><img src="mccoys-logo.png" alt="McCoy's Building Supply" /><span>Report Hub</span></div>
     <div class="topbar-divider"></div>
     <div class="topbar-label" id="topbar-label">Hot Items</div>
     <div class="search-wrap">
