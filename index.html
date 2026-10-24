@@ -99,6 +99,9 @@
     }
     .nav-btn.active .nav-count { background: #d6ebd6; color: var(--green); }
 
+    .nav-label-archive { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .archive-empty { grid-column: 1 / -1; text-align: center; padding: 48px 20px; color: var(--muted); font-size: 14px; border: 2px dashed var(--border); border-radius: 12px; }
+    .archive-empty strong { display: block; font-size: 15px; color: var(--text); margin-bottom: 4px; }
     .sidebar-footer { margin-top: auto; padding: 16px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); line-height: 1.5; }
 
     /* FAB */
@@ -250,6 +253,14 @@
         <span class="nav-icon">🏗️</span>
         Capital Projects
         <span class="nav-count">5</span>
+      </button>
+
+      <div class="nav-label nav-label-archive">Archive</div>
+
+      <button class="nav-btn" data-tab="archive">
+        <span class="nav-icon">🗄️</span>
+        Archive
+        <span class="nav-count">0</span>
       </button>
 
       <div class="sidebar-footer">
@@ -668,6 +679,20 @@
             </a>
           </article>
 
+        </div>
+      </section>
+
+      <section id="archive" class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-eyebrow"><span class="category-dot" style="background:#8a8a8a;"></span><span class="category-label" style="color:#8a8a8a;">Archive</span></div>
+            <h2>Archive</h2>
+            <p>Retired and inactive reports kept for historical reference.</p>
+          </div>
+          <span class="report-count-badge">0 reports</span>
+        </div>
+        <div class="report-grid">
+          <div class="archive-empty"><strong>No archived reports yet</strong>Reports moved here will appear in this section.</div>
         </div>
       </section>
 
