@@ -211,8 +211,8 @@
     <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-stats">
-        <div class="stat-box"><strong>22</strong><span>Reports</span></div>
-        <div class="stat-box"><strong>6</strong><span>Categories</span></div>
+        <div class="stat-box"><strong>23</strong><span>Reports</span></div>
+        <div class="stat-box"><strong>7</strong><span>Categories</span></div>
         <div class="stat-box"><strong>6</strong><span>Weekly</span></div>
         <div class="stat-box"><strong>7</strong><span>Monthly</span></div>
       </div>
@@ -253,6 +253,12 @@
         <span class="nav-icon">🏗️</span>
         Capital Projects
         <span class="nav-count">4</span>
+      </button>
+
+      <button class="nav-btn" data-tab="agents">
+        <span class="nav-icon">🤖</span>
+        Agents
+        <span class="nav-count">1</span>
       </button>
 
       <div class="nav-label nav-label-archive">Archive</div>
@@ -660,6 +666,34 @@
         </div>
       </section>
 
+      <!-- AGENTS -->
+      <section id="agents" class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-eyebrow"><span class="category-dot"></span><span class="category-label">Agents</span></div>
+            <h2>Agents</h2>
+            <p>Health and run status of the automated agents that keep these reports current.</p>
+          </div>
+          <span class="report-count-badge">1 report</span>
+        </div>
+        <div class="report-grid">
+
+          <article class="report-card" data-title="agent health dashboard">
+            <div class="card-pills">
+              <span class="pill" style="background:#e8f5e9;color:#1b5e20;border:1px solid rgba(27,94,32,.15);font-size:11px;font-weight:700;letter-spacing:.03em;padding:4px 10px;border-radius:999px;">🟢 Live</span>
+              <span class="pill pill-cadence">Hourly Update</span>
+            </div>
+            <h3>Agent Health Dashboard</h3>
+            <p>Monitors the automated report agents, showing each one's latest run, whether it ran on schedule, and any late, warning, or failed runs that need attention.</p>
+            <a class="report-link" href="https://julianchetlange-svg.github.io/Agent-Health-Dashboard/" target="_blank" rel="noopener noreferrer">
+              Open Report
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </article>
+
+        </div>
+      </section>
+
       <section id="archive" class="tab-panel">
         <div class="panel-header">
           <div>
@@ -748,6 +782,7 @@
       { title: 'Canyon Lake Schedule',               desc: 'Tracks the project schedule and milestone timeline for the Canyon Lake capital project, supporting on-time delivery and progress oversight.', cadence: 'Weekly Update', href: 'https://julianchetlange-svg.github.io/Canyon-Lake-Schedule-V2/', tab: 'capital-projects' },
       { title: 'New Store Cashflow',                 desc: 'Provides cashflow reference data for new store capital projects to support planning and financial oversight.', cadence: 'Reference', href: 'https://julianchetlange-svg.github.io/New-Store-Cashflow/', tab: 'capital-projects' },
       { title: 'Reno Schedule',                      desc: 'Provides a tentative schedule reference for the Reno 123 capital project, supporting planning and timeline visibility.', cadence: 'Reference', href: 'https://julianchetlange-svg.github.io/Reno-123-Tentative-Schedule/', tab: 'capital-projects' },
+      { title: 'Agent Health Dashboard',             desc: "Monitors the automated report agents, showing each one's latest run, whether it ran on schedule, and any late, warning, or failed runs that need attention.", cadence: 'Hourly Update', href: 'https://julianchetlange-svg.github.io/Agent-Health-Dashboard/', tab: 'agents' },
     ];
 
     function switchTab(tab) {
